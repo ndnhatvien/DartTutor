@@ -1,0 +1,20 @@
+{
+  "name": "dart-tutor-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "pnpm --filter dart-tutor dev",
+    "build": "pnpm --filter dart-tutor build",
+    "test": "pnpm --recursive test",
+    "type-check": "pnpm --recursive run type-check",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "typescript": "^5.6.3"
+  }
+}
