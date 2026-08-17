@@ -3,7 +3,7 @@ import type { Exercise } from '../content/types';
 import { createExerciseResult } from '../evaluator/dartpad-adapter';
 import type { ExerciseResult } from '../evaluator/types';
 import { LearnerStateManager } from '../learner/state-manager';
-import { RuleBasedTutorProvider } from '../tutor/rule-based-provider';
+import { HybridTutorProvider } from '../tutor/hybrid-provider';
 import type { TutorContext, TutorResponse } from '../tutor/types';
 import DartPadEmbed from './DartPadEmbed';
 
@@ -22,7 +22,7 @@ export default function ExerciseView({ exercise, onBack, onNextExercise }: Exerc
   const [lastResult, setLastResult] = useState<ExerciseResult | null>(null);
   const [showSolution, setShowSolution] = useState(false);
 
-  const tutorProvider = new RuleBasedTutorProvider(exercise);
+  const tutorProvider = new HybridTutorProvider(exercise);
   const exerciseState = learnerStateManager.getExerciseState(exercise.id);
 
   useEffect(() => {
