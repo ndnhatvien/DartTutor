@@ -200,7 +200,30 @@ pnpm test
 
 ### After Phase 0 Setup
 
-Will run and record results.
+```bash
+pnpm install
+```
+**Status**: ✅ Success (103 packages, 6.8s)
+
+```bash
+pnpm type-check
+```
+**Status**: ✅ Success (no errors)
+
+```bash
+pnpm lint
+```
+**Status**: ✅ Success (9 files, 11ms, no issues)
+
+```bash
+pnpm build
+```
+**Status**: ✅ Success (dist/index.html 0.32kB, dist/assets/index.js 142.76kB gzipped 45.91kB, 773ms)
+
+```bash
+pnpm test run
+```
+**Status**: ✅ Success (1 test passed, 977ms)
 
 ## Pre-existing Failures
 
@@ -222,12 +245,13 @@ Key findings:
 ## Next Steps
 
 1. ✅ Project structure created
-2. ⏭️ Install dependencies (`pnpm install`)
-3. ⏭️ Run baseline checks
-4. ⏭️ Create minimal React app skeleton
-5. ⏭️ Verify build/dev/test commands work
+2. ✅ Install dependencies (`pnpm install`)
+3. ✅ Run baseline checks
+4. ✅ Create minimal React app skeleton
+5. ✅ Verify build/dev/test commands work
 6. ⏭️ Begin Phase 1 (UI Shell)
 
 ---
 
-**Updated**: 2026-08-17 20:45 UTC+7
+**Created**: 2026-08-17 20:45 UTC+7  
+**Updated**: 2026-08-17 21:07 UTC+7 — Phase 0 complete, all baseline checks passed
