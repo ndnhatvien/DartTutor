@@ -2,10 +2,10 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
     "jsx": "react-jsx",
-    "types": ["vite/client", "vitest/globals"]
+    "types": ["vite/client", "vitest/globals"],
+    "allowArbitraryExtensions": true
   },
-  "include": ["src", "tests"],
+  "include": ["src", "tests", "content/**/*.json"],
   "exclude": ["node_modules", "dist", "build"]
 }

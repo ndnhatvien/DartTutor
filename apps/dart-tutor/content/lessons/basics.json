@@ -1,0 +1,93 @@
+{
+  "id": "basics",
+  "title": "Dart Basics",
+  "description": "Học các khái niệm cơ bản của Dart: variables, functions, string interpolation",
+  "objectives": [
+    "Hiểu và sử dụng biến trong Dart",
+    "Phân biệt final và const",
+    "Sử dụng string interpolation",
+    "Viết và gọi functions"
+  ],
+  "prerequisites": [],
+  "exercises": [
+    {
+      "id": "basics-001",
+      "lessonId": "basics",
+      "title": "String Interpolation",
+      "conceptTags": ["strings", "interpolation", "variables"],
+      "difficulty": "beginner",
+      "instructions": "Tạo một function `greet(String name)` trả về chuỗi \"Hello, {name}!\" sử dụng string interpolation.\n\nVí dụ:\n- `greet('Alice')` → `\"Hello, Alice!\"`\n- `greet('Bob')` → `\"Hello, Bob!\"`",
+      "starterCode": "String greet(String name) {\n  // TODO: Implement this function\n  return '';\n}\n\nvoid main() {\n  print(greet('World'));\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('greet returns correct greeting', () {\n    expect(greet('Alice'), equals('Hello, Alice!'));\n    expect(greet('Bob'), equals('Hello, Bob!'));\n    expect(greet('Dart'), equals('Hello, Dart!'));\n  });\n}",
+      "solutionCode": "String greet(String name) {\n  return 'Hello, $name!';\n}\n\nvoid main() {\n  print(greet('World'));\n}",
+      "hints": [
+        "Sử dụng ký hiệu $ để nhúng biến vào string",
+        "Cú pháp: 'Hello, $name!' sẽ thay thế $name bằng giá trị của biến name"
+      ],
+      "expectedConcepts": ["string_interpolation", "function_return"],
+      "commonMistakes": [
+        {
+          "id": "concatenation_instead",
+          "pattern": "return 'Hello, ' + name",
+          "explanation": "Đang dùng string concatenation thay vì interpolation",
+          "hint": "Thử dùng $name thay vì + name"
+        }
+      ]
+    },
+    {
+      "id": "basics-002",
+      "lessonId": "basics",
+      "title": "Final vs Const",
+      "conceptTags": ["variables", "final", "const", "immutability"],
+      "difficulty": "beginner",
+      "instructions": "Khai báo một biến `final` tên là `userName` với giá trị \"Alice\" và một biến `const` tên là `maxAttempts` với giá trị 3.\n\nSau đó viết function `canRetry(int attempts)` trả về `true` nếu `attempts < maxAttempts`.",
+      "starterCode": "// TODO: Khai báo userName (final)\n// TODO: Khai báo maxAttempts (const)\n\nbool canRetry(int attempts) {\n  // TODO: Implement\n  return false;\n}\n\nvoid main() {\n  print('User: $userName');\n  print('Can retry: ${canRetry(2)}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('userName is defined', () {\n    expect(userName, equals('Alice'));\n  });\n\n  test('maxAttempts is 3', () {\n    expect(maxAttempts, equals(3));\n  });\n\n  test('canRetry works correctly', () {\n    expect(canRetry(0), isTrue);\n    expect(canRetry(2), isTrue);\n    expect(canRetry(3), isFalse);\n    expect(canRetry(5), isFalse);\n  });\n}",
+      "solutionCode": "final userName = 'Alice';\nconst maxAttempts = 3;\n\nbool canRetry(int attempts) {\n  return attempts < maxAttempts;\n}\n\nvoid main() {\n  print('User: $userName');\n  print('Can retry: ${canRetry(2)}');\n}",
+      "hints": [
+        "final: giá trị được gán một lần khi runtime. Dùng: final variableName = value;",
+        "const: compile-time constant. Dùng: const variableName = value;",
+        "So sánh attempts với maxAttempts bằng toán tử <"
+      ],
+      "expectedConcepts": ["final", "const", "comparison"],
+      "commonMistakes": [
+        {
+          "id": "var_instead_of_final",
+          "pattern": "var userName",
+          "explanation": "Đang dùng var thay vì final",
+          "hint": "var cho phép thay đổi giá trị. Dùng final nếu không muốn thay đổi."
+        }
+      ]
+    },
+    {
+      "id": "basics-003",
+      "lessonId": "basics",
+      "title": "Greeting Function",
+      "conceptTags": ["functions", "parameters", "string_interpolation", "conditionals"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `greetUser(String name, {String? title})` trả về lời chào.\n\n- Nếu `title` được cung cấp: \"Hello, {title} {name}!\"\n- Nếu không: \"Hello, {name}!\"\n\nVí dụ:\n- `greetUser('Alice')` → `\"Hello, Alice!\"`\n- `greetUser('Smith', title: 'Dr.')` → `\"Hello, Dr. Smith!\"`",
+      "starterCode": "String greetUser(String name, {String? title}) {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  print(greetUser('Alice'));\n  print(greetUser('Smith', title: 'Dr.'));\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('greetUser without title', () {\n    expect(greetUser('Alice'), equals('Hello, Alice!'));\n    expect(greetUser('Bob'), equals('Hello, Bob!'));\n  });\n\n  test('greetUser with title', () {\n    expect(greetUser('Smith', title: 'Dr.'), equals('Hello, Dr. Smith!'));\n    expect(greetUser('Johnson', title: 'Prof.'), equals('Hello, Prof. Johnson!'));\n  });\n}",
+      "solutionCode": "String greetUser(String name, {String? title}) {\n  if (title != null) {\n    return 'Hello, $title $name!';\n  }\n  return 'Hello, $name!';\n}\n\nvoid main() {\n  print(greetUser('Alice'));\n  print(greetUser('Smith', title: 'Dr.'));\n}",
+      "hints": [
+        "Dùng if (title != null) để kiểm tra xem title có giá trị hay không",
+        "Optional named parameters sử dụng cú pháp: {Type? paramName}",
+        "Nếu title có giá trị, nhúng cả title và name vào chuỗi"
+      ],
+      "expectedConcepts": [
+        "optional_parameters",
+        "null_check",
+        "string_interpolation",
+        "if_statement"
+      ],
+      "commonMistakes": [
+        {
+          "id": "nullable_access",
+          "pattern": "return 'Hello, $title $name!'",
+          "explanation": "Đang truy cập title mà không kiểm tra null",
+          "hint": "Cần kiểm tra if (title != null) trước khi sử dụng"
+        }
+      ]
+    }
+  ]
+}
