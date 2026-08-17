@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { Exercise } from '../content/types';
+import DartPadEmbed from './DartPadEmbed';
 
 interface ExerciseViewProps {
   exercise: Exercise;
@@ -7,6 +9,9 @@ interface ExerciseViewProps {
 }
 
 export default function ExerciseView({ exercise, onBack, onNextExercise }: ExerciseViewProps) {
+  const [consoleMessages, setConsoleMessages] = useState<string[]>([]);
+  const [compilationError, setCompilationError] = useState<string | null>(null);
+
   const difficultyColors = {
     beginner: '#10b981',
     intermediate: '#f59e0b',
@@ -17,6 +22,16 @@ export default function ExerciseView({ exercise, onBack, onNextExercise }: Exerc
     beginner: 'Cơ bản',
     intermediate: 'Trung bình',
     advanced: 'Nâng cao',
+  };
+
+  const handleConsoleOutput = (output: string) => {
+    setConsoleMessages((prev) => [...prev, output]);
+    setCompilationError(null);
+  };
+
+  const handleCompilationError = (error: string) => {
+    setCompilationError(error);
+    setConsoleMessages([]);
   };
 
   return (
@@ -147,57 +162,54 @@ export default function ExerciseView({ exercise, onBack, onNextExercise }: Exerc
         <div style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
           <div style={{ marginBottom: '1rem' }}>
             <h3 style={{ marginBottom: '0.5rem', color: '#1e40af' }}>✏️ Code Editor</h3>
-            <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
-              Phase 2 sẽ tích hợp DartPad ở đây
-            </p>
           </div>
 
-          <div
-            style={{
-              backgroundColor: '#1e293b',
-              color: '#e2e8f0',
-              padding: '1.5rem',
-              borderRadius: '8px',
-              fontFamily: 'monospace',
-              fontSize: '0.9rem',
-              lineHeight: '1.6',
-              whiteSpace: 'pre-wrap',
-              minHeight: '400px',
-            }}
-          >
-            {exercise.starterCode}
-          </div>
+          <DartPadEmbed
+            initialCode={exercise.starterCode}
+            testCode={exercise.testCode}
+            onConsoleOutput={handleConsoleOutput}
+            onCompilationError={handleCompilationError}
+          />
 
-          <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-            <button
+          {compilationError && (
+            <div
               style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 500,
+                marginTop: '1rem',
+                padding: '1rem',
+                backgroundColor: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '8px',
+                color: '#991b1b',
               }}
-              type="button"
             >
-              ▶️ Run
-            </button>
-            <button
+              <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>❌ Compilation Error:</div>
+              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontSize: '0.875rem' }}>
+                {compilationError}
+              </pre>
+            </div>
+          )}
+
+          {consoleMessages.length > 0 && (
+            <div
               style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 500,
+                marginTop: '1rem',
+                padding: '1rem',
+                backgroundColor: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                borderRadius: '8px',
+                color: '#166534',
               }}
-              type="button"
             >
-              ✓ Test
-            </button>
-          </div>
+              <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>✓ Console Output:</div>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                {consoleMessages.map((msg, idx) => (
+                  <div key={`msg-${idx}-${msg.slice(0, 20)}`} style={{ marginBottom: '0.25rem' }}>
+                    {msg}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
