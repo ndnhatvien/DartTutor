@@ -8,6 +8,50 @@ interface DartPadEmbedProps {
   onCompilationError?: (error: string) => void;
 }
 
+function transformTestCode(raw: string): string {
+  let code = raw;
+  code = code.replace(/^import\s+'package:test\/test\.dart';\s*\n?/m, '');
+
+  code = code.replace(/expect\(([^,]+),\s*equals\(([^)]+)\)\)/g, 'assert(($1) == ($2))');
+  code = code.replace(/expect\(([^,]+),\s*isNull\)/g, 'assert(($1) == null)');
+  code = code.replace(/expect\(([^,]+),\s*isNotNull\)/g, 'assert(($1) != null)');
+  code = code.replace(/expect\(([^,]+),\s*isTrue\)/g, 'assert(($1) == true)');
+  code = code.replace(/expect\(([^,]+),\s*isFalse\)/g, 'assert(($1) == false)');
+
+  const tests: { name: string; body: string; async: boolean }[] = [];
+  const testRegex = /test\(\s*'([^']+)'\s*,\s*\(\)\s*(async\s+)?\{/g;
+  let match = testRegex.exec(code);
+  while (match !== null) {
+    const name = match[1] ?? 'unnamed test';
+    const isAsync = match[2] != null;
+    const bodyStart = match.index + match[0].length;
+    let depth = 1;
+    let j = bodyStart;
+    while (j < code.length && depth > 0) {
+      if (code[j] === '{') depth++;
+      else if (code[j] === '}') depth--;
+      j++;
+    }
+    const body = code.slice(bodyStart, j - 1).trim();
+    tests.push({ name, body, async: isAsync });
+    match = testRegex.exec(code);
+  }
+
+  if (tests.length === 0) return code;
+
+  let result = '';
+  for (const t of tests) {
+    const lines = t.body.split('\n').filter((l) => l.trim());
+    result += `  // ${t.name}\n  try {\n`;
+    for (const line of lines) {
+      result += `    ${line.trim()}\n`;
+    }
+    result += `    print('\\u2705 ${t.name}');\n`;
+    result += `  } catch (e) {\n    print('\\u274c ${t.name}: \\$e');\n  }\n\n`;
+  }
+  return result.trimEnd();
+}
+
 export default function DartPadEmbed({
   initialCode,
   testCode,
@@ -67,7 +111,11 @@ export default function DartPadEmbed({
 
   const runTests = () => {
     if (!testCode) return;
-    const combinedCode = `${lastCodeRef.current}\n\n${testCode}`;
+    const userCode = lastCodeRef.current;
+    const mainIdx = userCode.indexOf('\nvoid main(');
+    const codeWithoutMain = mainIdx !== -1 ? userCode.substring(0, mainIdx) : userCode;
+    const transformed = transformTestCode(testCode);
+    const combinedCode = `${codeWithoutMain}\n\nvoid main() {\n${transformed}\n}`;
     sendCodeToDartPad(combinedCode);
   };
 
