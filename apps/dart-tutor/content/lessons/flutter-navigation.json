@@ -1,0 +1,89 @@
+{
+  "id": "flutter-navigation",
+  "title": "Flutter Navigation",
+  "description": "Navigation trong Flutter: push, pop, named routes, passing data",
+  "objectives": [
+    "Hiểu mô hình navigation stack",
+    "Triển khai router bằng Dart thuần",
+    "Pass data giữa các màn hình"
+  ],
+  "prerequisites": ["flutter-basics"],
+  "exercises": [
+    {
+      "id": "flutter-nav-001",
+      "lessonId": "flutter-navigation",
+      "title": "Navigation Stack",
+      "conceptTags": ["stack", "push", "pop", "history"],
+      "difficulty": "beginner",
+      "instructions": "Tạo class `NavStack` mô phỏng navigation stack:\n\n- Property `_stack` (private List<String>)\n- Method `push(String route)` thêm route vào đầu stack\n- Method `pop()` xóa route đầu stack, trả về route đã xóa (null nếu rỗng)\n- Method `current()` trả về route hiện tại (đầu stack), null nếu rỗng\n- Method `length()` trả về số lượng routes\n- Method `history()` trả về lịch sử (danh sách từ dưới lên)\n\nVí dụ:\n```\nfinal nav = NavStack();\nnav.push('/home');\nnav.push('/profile');\nnav.current() → '/profile'\nnav.pop() → '/profile'\nnav.current() → '/home'\n```",
+      "starterCode": "class NavStack {\n  final List<String> _stack = [];\n\n  // TODO: Implement push\n  void push(String route) {}\n\n  // TODO: Implement pop\n  String? pop() {\n    return null;\n  }\n\n  // TODO: Implement current\n  String? current() {\n    return null;\n  }\n\n  // TODO: Implement length\n  int length() {\n    return 0;\n  }\n\n  // TODO: Implement history (từ dưới lên)\n  List<String> history() {\n    return [];\n  }\n}\n\nvoid main() {\n  final nav = NavStack();\n  nav.push('/home');\n  nav.push('/profile');\n  nav.push('/settings');\n\n  print('Current: ${nav.current()}');\n  print('Length: ${nav.length()}');\n  print('History: ${nav.history()}');\n\n  final popped = nav.pop();\n  print('Popped: $popped');\n  print('Current: ${nav.current()}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('push adds to stack', () {\n    final nav = NavStack();\n    nav.push('/home');\n    expect(nav.current(), equals('/home'));\n    expect(nav.length(), equals(1));\n  });\n\n  test('push multiple routes', () {\n    final nav = NavStack();\n    nav.push('/home');\n    nav.push('/profile');\n    expect(nav.current(), equals('/profile'));\n    expect(nav.length(), equals(2));\n  });\n\n  test('pop removes and returns top', () {\n    final nav = NavStack();\n    nav.push('/home');\n    nav.push('/profile');\n    expect(nav.pop(), equals('/profile'));\n    expect(nav.current(), equals('/home'));\n  });\n\n  test('pop on empty returns null', () {\n    final nav = NavStack();\n    expect(nav.pop(), isNull);\n  });\n\n  test('history returns bottom-to-top order', () {\n    final nav = NavStack();\n    nav.push('/a');\n    nav.push('/b');\n    nav.push('/c');\n    expect(nav.history(), equals(['/a', '/b', '/c']));\n  });\n}",
+      "solutionCode": "class NavStack {\n  final List<String> _stack = [];\n\n  void push(String route) {\n    _stack.add(route);\n  }\n\n  String? pop() {\n    if (_stack.isEmpty) return null;\n    return _stack.removeLast();\n  }\n\n  String? current() {\n    if (_stack.isEmpty) return null;\n    return _stack.last;\n  }\n\n  int length() {\n    return _stack.length;\n  }\n\n  List<String> history() {\n    return List.from(_stack);\n  }\n}\n\nvoid main() {\n  final nav = NavStack();\n  nav.push('/home');\n  nav.push('/profile');\n  nav.push('/settings');\n\n  print('Current: ${nav.current()}');\n  print('Length: ${nav.length()}');\n  print('History: ${nav.history()}');\n\n  final popped = nav.pop();\n  print('Popped: $popped');\n  print('Current: ${nav.current()}');\n}",
+      "hints": [
+        "push: _stack.add(route) — thêm vào cuối list",
+        "pop: _stack.removeLast() — xóa và trả về phần tử cuối",
+        "current: _stack.isEmpty ? null : _stack.last",
+        "history: List.from(_stack) để tạo bản sao theo thứ tự từ dưới lên"
+      ],
+      "expectedConcepts": ["stack", "push", "pop", "list"],
+      "commonMistakes": [
+        {
+          "id": "wrong_pop",
+          "pattern": "_stack.removeAt(0)",
+          "explanation": "Sai thao tác stack: pop phải xóa phần tử CUỐI cùng, không phải đầu",
+          "hint": "Dùng _stack.removeLast() để xóa phần tử cuối"
+        }
+      ]
+    },
+    {
+      "id": "flutter-nav-002",
+      "lessonId": "flutter-navigation",
+      "title": "Named Route Router",
+      "conceptTags": ["router", "named_route", "map", "handler"],
+      "difficulty": "intermediate",
+      "instructions": "Tạo class `Router` mô phỏng named route router:\n\n- Method `register(String route, Function handler)` đăng ký route với handler\n- Method `navigate(String route)` gọi handler của route, trả về kết quả. Nếu route không tồn tại, trả về \"404: {route}\"\n- Method `hasRoute(String route)` kiểm tra route có tồn tại\n- Method `routes()` trả về danh sách tất cả routes đã đăng ký\n\nVí dụ:\n```\nfinal router = Router();\nrouter.register('/home', () => 'Home Page');\nrouter.register('/about', () => 'About Page');\nrouter.navigate('/home') → 'Home Page'\nrouter.navigate('/missing') → '404: /missing'\n```",
+      "starterCode": "class Router {\n  // TODO: Khai báo map routes\n\n  // TODO: Implement register\n  void register(String route, Function handler) {}\n\n  // TODO: Implement navigate\n  dynamic navigate(String route) {\n    return null;\n  }\n\n  // TODO: Implement hasRoute\n  bool hasRoute(String route) {\n    return false;\n  }\n\n  // TODO: Implement routes\n  List<String> routes() {\n    return [];\n  }\n}\n\nvoid main() {\n  final router = Router();\n  router.register('/home', () => 'Home Page');\n  router.register('/about', () => 'About Page');\n  router.register('/profile', () => 'Profile Page');\n\n  print(router.navigate('/home'));\n  print(router.navigate('/about'));\n  print(router.navigate('/missing'));\n  print('Routes: ${router.routes()}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('navigate returns handler result', () {\n    final router = Router();\n    router.register('/home', () => 'Home');\n    expect(router.navigate('/home'), equals('Home'));\n  });\n\n  test('navigate returns 404 for unknown route', () {\n    final router = Router();\n    expect(router.navigate('/missing'), equals('404: /missing'));\n  });\n\n  test('hasRoute returns true for registered', () {\n    final router = Router();\n    router.register('/home', () => 'Home');\n    expect(router.hasRoute('/home'), isTrue);\n  });\n\n  test('hasRoute returns false for unregistered', () {\n    final router = Router();\n    expect(router.hasRoute('/missing'), isFalse);\n  });\n\n  test('routes returns all registered', () {\n    final router = Router();\n    router.register('/a', () => 'A');\n    router.register('/b', () => 'B');\n    expect(router.routes(), containsAll(['/a', '/b']));\n  });\n}",
+      "solutionCode": "class Router {\n  final Map<String, Function> _routes = {};\n\n  void register(String route, Function handler) {\n    _routes[route] = handler;\n  }\n\n  dynamic navigate(String route) {\n    final handler = _routes[route];\n    if (handler == null) {\n      return '404: $route';\n    }\n    return handler();\n  }\n\n  bool hasRoute(String route) {\n    return _routes.containsKey(route);\n  }\n\n  List<String> routes() {\n    return _routes.keys.toList();\n  }\n}\n\nvoid main() {\n  final router = Router();\n  router.register('/home', () => 'Home Page');\n  router.register('/about', () => 'About Page');\n  router.register('/profile', () => 'Profile Page');\n\n  print(router.navigate('/home'));\n  print(router.navigate('/about'));\n  print(router.navigate('/missing'));\n  print('Routes: ${router.routes()}');\n}",
+      "hints": [
+        "Dùng Map<String, Function> để lưu routes và handlers",
+        "navigate: kiểm tra _routes.containsKey(route) trước khi gọi handler",
+        "routes(): _routes.keys.toList() để lấy danh sách keys"
+      ],
+      "expectedConcepts": ["router", "map", "function_reference", "containsKey"],
+      "commonMistakes": [
+        {
+          "id": "null_handler",
+          "pattern": "return _routes[route]();",
+          "explanation": "Không kiểm tra null, sẽ lỗi khi route không tồn tại",
+          "hint": "Kiểm tra handler == null trước khi gọi"
+        }
+      ]
+    },
+    {
+      "id": "flutter-nav-003",
+      "lessonId": "flutter-navigation",
+      "title": "Route Parameter Parser",
+      "conceptTags": ["parameter", "query", "parser", "string_manipulation"],
+      "difficulty": "intermediate",
+      "instructions": "Tạo class `RouteParser` parse URL với query parameters:\n\n- Method `parse(String url)` parse URL và trả về Map với:\n  - `path`: path portion (trước `?`)\n  - `params`: Map các query parameters\n- Method `build(String path, Map<String, String> params)` build URL từ path và params\n- Method `getParam(String url, String key)` lấy giá trị param từ URL\n\nVí dụ:\n```\nfinal parser = RouteParser();\nparser.parse('/users/123?page=2&sort=name')\n  → {path: '/users/123', params: {page: '2', sort: 'name'}}\nparser.build('/search', {q: 'dart', limit: '10'})\n  → '/search?q=dart&limit=10'\nparser.getParam('/users?page=2', 'page')\n  → '2'\n```",
+      "starterCode": "class RouteParser {\n  // TODO: Implement parse\n  Map<String, dynamic> parse(String url) {\n    return {};\n  }\n\n  // TODO: Implement build\n  String build(String path, Map<String, String> params) {\n    return '';\n  }\n\n  // TODO: Implement getParam\n  String? getParam(String url, String key) {\n    return null;\n  }\n}\n\nvoid main() {\n  final parser = RouteParser();\n\n  final parsed = parser.parse('/users/123?page=2&sort=name');\n  print('Parsed: $parsed');\n\n  final built = parser.build('/search', {'q': 'dart', 'limit': '10'});\n  print('Built: $built');\n\n  final page = parser.getParam('/users?page=2&size=10', 'page');\n  print('Page: $page');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('parse extracts path', () {\n    final parser = RouteParser();\n    final result = parser.parse('/users/123');\n    expect(result['path'], equals('/users/123'));\n  });\n\n  test('parse extracts query params', () {\n    final parser = RouteParser();\n    final result = parser.parse('/users?page=2&sort=name');\n    expect(result['params'], equals({'page': '2', 'sort': 'name'}));\n  });\n\n  test('parse handles no query', () {\n    final parser = RouteParser();\n    final result = parser.parse('/users');\n    expect(result['path'], equals('/users'));\n    expect(result['params'], equals({}));\n  });\n\n  test('build creates URL with params', () {\n    final parser = RouteParser();\n    final url = parser.build('/search', {'q': 'dart'});\n    expect(url, equals('/search?q=dart'));\n  });\n\n  test('build creates URL without params', () {\n    final parser = RouteParser();\n    final url = parser.build('/home', {});\n    expect(url, equals('/home'));\n  });\n\n  test('getParam extracts value', () {\n    final parser = RouteParser();\n    expect(parser.getParam('/users?page=2&size=10', 'page'), equals('2'));\n  });\n\n  test('getParam returns null for missing', () {\n    final parser = RouteParser();\n    expect(parser.getParam('/users?page=2', 'missing'), isNull);\n  });\n}",
+      "solutionCode": "class RouteParser {\n  Map<String, dynamic> parse(String url) {\n    final questionIndex = url.indexOf('?');\n    if (questionIndex == -1) {\n      return {'path': url, 'params': {}};\n    }\n\n    final path = url.substring(0, questionIndex);\n    final queryString = url.substring(questionIndex + 1);\n    final params = <String, String>{};\n\n    for (final pair in queryString.split('&')) {\n      final eqIndex = pair.indexOf('=');\n      if (eqIndex != -1) {\n        final key = pair.substring(0, eqIndex);\n        final value = pair.substring(eqIndex + 1);\n        params[key] = value;\n      }\n    }\n\n    return {'path': path, 'params': params};\n  }\n\n  String build(String path, Map<String, String> params) {\n    if (params.isEmpty) return path;\n    final query = params.entries.map((e) => '${e.key}=${e.value}').join('&');\n    return '$path?$query';\n  }\n\n  String? getParam(String url, String key) {\n    final parsed = parse(url);\n    final params = parsed['params'] as Map<String, String>?;\n    return params?[key];\n  }\n}\n\nvoid main() {\n  final parser = RouteParser();\n\n  final parsed = parser.parse('/users/123?page=2&sort=name');\n  print('Parsed: $parsed');\n\n  final built = parser.build('/search', {'q': 'dart', 'limit': '10'});\n  print('Built: $built');\n\n  final page = parser.getParam('/users?page=2&size=10', 'page');\n  print('Page: $page');\n}",
+      "hints": [
+        "parse: tìm indexOf('?') để tách path và query string",
+        "Tách query string bằng split('&'), rồi split('=') để lấy key-value",
+        "build: dùng entries.map().join('&') rồi nối với path"
+      ],
+      "expectedConcepts": ["string_parse", "indexOf", "split", "map_join"],
+      "commonMistakes": [
+        {
+          "id": "missing_empty_check",
+          "pattern": "url.indexOf('?')",
+          "explanation": "Không xử lý trường hợp không có query string",
+          "hint": "Kiểm tra questionIndex == -1 trước khi substring"
+        }
+      ]
+    }
+  ]
+}

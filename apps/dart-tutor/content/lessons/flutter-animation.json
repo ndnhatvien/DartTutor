@@ -1,0 +1,140 @@
+{
+  "id": "flutter-animation",
+  "title": "Flutter Animation",
+  "description": "Animation trong Flutter: AnimationController, Tween, Curves, transitions",
+  "objectives": [
+    "Hiểu các khái niệm cơ bản của animation",
+    "Triển khai animation controller bằng Dart thuần",
+    "Sử dụng curves và tween để tùy chỉnh animation"
+  ],
+  "prerequisites": ["flutter-state"],
+  "exercises": [
+    {
+      "id": "flutter-anim-001",
+      "lessonId": "flutter-animation",
+      "title": "Animation Controller",
+      "conceptTags": ["controller", "ticker", "frame", "duration"],
+      "difficulty": "beginner",
+      "instructions": "Tạo class `AnimController` mô phỏng animation controller:\n\n- Constructor `AnimController(int durationMs)`\n- Property `double value` (0.0 → 1.0)\n- Property `bool isAnimating`\n- Method `start()` bắt đầu animation, set isAnimating=true\n- Method `stop()` dừng animation, set isAnimating=false\n- Method `reset()` reset value về 0.0\n- Method `tick(int elapsedMs)` advance animation theo elapsed time:\n  - value += elapsedMs / durationMs\n  - Clamp value <= 1.0\n  - Khi value >= 1.0: isAnimating = false\n- Method `progress()` trả về value dưới dạng percentage (0-100)\n- Method `describe()` trả về \"Anim({value}, {status})\"\n\nVí dụ:\n```\nfinal anim = AnimController(1000);\nanim.start();\nanim.tick(500);\nanim.value → 0.5\nanim.progress() → 50\nanim.tick(600);\nanim.value → 1.0 (clamped)\nanim.isAnimating → false\n```",
+      "starterCode": "class AnimController {\n  final int durationMs;\n  double value = 0.0;\n  bool isAnimating = false;\n\n  AnimController(this.durationMs);\n\n  // TODO: Implement start\n  void start() {}\n\n  // TODO: Implement stop\n  void stop() {}\n\n  // TODO: Implement reset\n  void reset() {}\n\n  // TODO: Implement tick\n  void tick(int elapsedMs) {}\n\n  // TODO: Implement progress\n  int progress() {\n    return 0;\n  }\n\n  // TODO: Implement describe\n  String describe() {\n    return '';\n  }\n}\n\nvoid main() {\n  final anim = AnimController(1000);\n  anim.start();\n\n  anim.tick(300);\n  print('After 300ms: ${anim.describe()}, progress=${anim.progress()}%');\n\n  anim.tick(300);\n  print('After 600ms: ${anim.describe()}, progress=${anim.progress()}%');\n\n  anim.tick(500);\n  print('After 1100ms: ${anim.describe()}, progress=${anim.progress()}%');\n  print('Animating: ${anim.isAnimating}');\n\n  anim.reset();\n  print('After reset: ${anim.describe()}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('initial state', () {\n    final anim = AnimController(1000);\n    expect(anim.value, equals(0.0));\n    expect(anim.isAnimating, isFalse);\n  });\n\n  test('start sets isAnimating', () {\n    final anim = AnimController(1000);\n    anim.start();\n    expect(anim.isAnimating, isTrue);\n  });\n\n  test('tick advances value', () {\n    final anim = AnimController(1000);\n    anim.start();\n    anim.tick(500);\n    expect(anim.value, closeTo(0.5, 0.01));\n  });\n\n  test('tick clamps at 1.0', () {\n    final anim = AnimController(1000);\n    anim.start();\n    anim.tick(1500);\n    expect(anim.value, equals(1.0));\n    expect(anim.isAnimating, isFalse);\n  });\n\n  test('stop pauses animation', () {\n    final anim = AnimController(1000);\n    anim.start();\n    anim.tick(500);\n    anim.stop();\n    expect(anim.isAnimating, isFalse);\n    anim.tick(500);\n    expect(anim.value, closeTo(0.5, 0.01));\n  });\n\n  test('reset returns to zero', () {\n    final anim = AnimController(1000);\n    anim.start();\n    anim.tick(500);\n    anim.reset();\n    expect(anim.value, equals(0.0));\n  });\n\n  test('progress returns percentage', () {\n    final anim = AnimController(1000);\n    anim.start();\n    anim.tick(750);\n    expect(anim.progress(), equals(75));\n  });\n}",
+      "solutionCode": "class AnimController {\n  final int durationMs;\n  double value = 0.0;\n  bool isAnimating = false;\n\n  AnimController(this.durationMs);\n\n  void start() {\n    isAnimating = true;\n  }\n\n  void stop() {\n    isAnimating = false;\n  }\n\n  void reset() {\n    value = 0.0;\n    isAnimating = false;\n  }\n\n  void tick(int elapsedMs) {\n    if (!isAnimating) return;\n    value += elapsedMs / durationMs;\n    if (value >= 1.0) {\n      value = 1.0;\n      isAnimating = false;\n    }\n  }\n\n  int progress() {\n    return (value * 100).toInt();\n  }\n\n  String describe() {\n    final status = isAnimating ? 'running' : (value >= 1.0 ? 'completed' : 'idle');\n    return 'Anim($value, $status)';\n  }\n}\n\nvoid main() {\n  final anim = AnimController(1000);\n  anim.start();\n\n  anim.tick(300);\n  print('After 300ms: ${anim.describe()}, progress=${anim.progress()}%');\n\n  anim.tick(300);\n  print('After 600ms: ${anim.describe()}, progress=${anim.progress()}%');\n\n  anim.tick(500);\n  print('After 1100ms: ${anim.describe()}, progress=${anim.progress()}%');\n  print('Animating: ${anim.isAnimating}');\n\n  anim.reset();\n  print('After reset: ${anim.describe()}');\n}",
+      "hints": [
+        "tick: value += elapsedMs / durationMs; (chia cho double)",
+        "Clamp: if (value >= 1.0) { value = 1.0; isAnimating = false; }",
+        "progress: return (value * 100).toInt();"
+      ],
+      "expectedConcepts": ["animation", "tick", "clamp", "progress"],
+      "commonMistakes": [
+        {
+          "id": "integer_division",
+          "pattern": "value += elapsedMs ~/ durationMs;",
+          "explanation": "Dùng integer division (~/) thay vì double division (/)",
+          "hint": "Dùng / thay vì ~/, kết quả là double"
+        }
+      ]
+    },
+    {
+      "id": "flutter-anim-002",
+      "lessonId": "flutter-animation",
+      "title": "Tween Interpolator",
+      "conceptTags": ["tween", "interpolate", "lerp", "range"],
+      "difficulty": "intermediate",
+      "instructions": "Tạo class `Tween<T extends num>` mô phỏng tween interpolation:\n\n- Constructor `Tween(T begin, T end)`\n- Method `T lerp(double t)` — interpolate từ begin đến end với t ∈ [0, 1]\n  - t=0 → begin, t=1 → end\n  - t=0.5 → midway\n- Method `T transform(double t)` — lerp rồi clamp t vào [0, 1]\n- Method `reverse()` trả về Tween mới từ end → begin\n- Method `chain(Tween other)` trả về Tween mới: begin=this.begin, end=other.end\n- Method `describe()` trả về \"Tween({begin} → {end})\"\n\nVí dụ:\n```\nfinal tween = Tween(0, 100);\ntween.lerp(0.0) → 0\ntween.lerp(0.5) → 50\ntween.lerp(1.0) → 100\ntween.transform(1.5) → 100 (clamped)\ntween.reverse().describe() → 'Tween(100 → 0)'\n```",
+      "starterCode": "class Tween<T extends num> {\n  final T begin;\n  final T end;\n\n  Tween(this.begin, this.end);\n\n  // TODO: Implement lerp\n  T lerp(double t) {\n    return begin;\n  }\n\n  // TODO: Implement transform (clamp t, then lerp)\n  T transform(double t) {\n    return begin;\n  }\n\n  // TODO: Implement reverse\n  Tween<T> reverse() {\n    return Tween(begin, end);\n  }\n\n  // TODO: Implement chain\n  Tween<T> chain(Tween<T> other) {\n    return Tween(begin, other.end);\n  }\n\n  // TODO: Implement describe\n  String describe() {\n    return '';\n  }\n}\n\nvoid main() {\n  final tween = Tween(0, 100);\n  print(tween.describe());\n  print('t=0: ${tween.lerp(0.0)}');\n  print('t=0.5: ${tween.lerp(0.5)}');\n  print('t=1: ${tween.lerp(1.0)}');\n  print('t=1.5 clamped: ${tween.transform(1.5)}');\n  print('t=-0.5 clamped: ${tween.transform(-0.5)}');\n  print('Reversed: ${tween.reverse().describe()}');\n  print('Chained: ${tween.chain(Tween(100, 200)).describe()}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('lerp at 0 returns begin', () {\n    final t = Tween(0, 100);\n    expect(t.lerp(0.0), equals(0));\n  });\n\n  test('lerp at 1 returns end', () {\n    final t = Tween(0, 100);\n    expect(t.lerp(1.0), equals(100));\n  });\n\n  test('lerp at 0.5 returns midpoint', () {\n    final t = Tween(0, 100);\n    expect(t.lerp(0.5), equals(50));\n  });\n\n  test('transform clamps t > 1', () {\n    final t = Tween(0, 100);\n    expect(t.transform(1.5), equals(100));\n  });\n\n  test('transform clamps t < 0', () {\n    final t = Tween(0, 100);\n    expect(t.transform(-0.5), equals(0));\n  });\n\n  test('reverse swaps begin and end', () {\n    final t = Tween(0, 100);\n    expect(t.reverse().begin, equals(100));\n    expect(t.reverse().end, equals(0));\n  });\n\n  test('chain uses this begin and other end', () {\n    final t1 = Tween(0, 50);\n    final t2 = Tween(50, 100);\n    final chained = t1.chain(t2);\n    expect(chained.begin, equals(0));\n    expect(chained.end, equals(100));\n  });\n\n  test('describe formats correctly', () {\n    final t = Tween(10, 20);\n    expect(t.describe(), equals('Tween(10 → 20)'));\n  });\n}",
+      "solutionCode": "class Tween<T extends num> {\n  final T begin;\n  final T end;\n\n  Tween(this.begin, this.end);\n\n  T lerp(double t) {\n    final diff = end - begin;\n    if (diff is int) {\n      return (begin + (diff * t).round()) as T;\n    }\n    return (begin + (diff * t)) as T;\n  }\n\n  T transform(double t) {\n    final clamped = t.clamp(0.0, 1.0);\n    return lerp(clamped);\n  }\n\n  Tween<T> reverse() {\n    return Tween(end, begin);\n  }\n\n  Tween<T> chain(Tween<T> other) {\n    return Tween(begin, other.end);\n  }\n\n  String describe() {\n    return 'Tween($begin → $end)';\n  }\n}\n\nvoid main() {\n  final tween = Tween(0, 100);\n  print(tween.describe());\n  print('t=0: ${tween.lerp(0.0)}');\n  print('t=0.5: ${tween.lerp(0.5)}');\n  print('t=1: ${tween.lerp(1.0)}');\n  print('t=1.5 clamped: ${tween.transform(1.5)}');\n  print('t=-0.5 clamped: ${tween.transform(-0.5)}');\n  print('Reversed: ${tween.reverse().describe()}');\n  print('Chained: ${tween.chain(Tween(100, 200)).describe()}');\n}",
+      "hints": [
+        "lerp: begin + (end - begin) * t",
+        "transform: lerp(t.clamp(0.0, 1.0))",
+        "reverse: return Tween(end, begin);",
+        "chain: return Tween(begin, other.end);"
+      ],
+      "expectedConcepts": ["interpolation", "lerp", "clamp", "generic_type"],
+      "commonMistakes": [
+        {
+          "id": "no_clamp_lerp",
+          "pattern": "return (begin + (end - begin) * t) as T;",
+          "explanation": "Không clamp t trong lerp, giá trị ngoài [0,1] sẽ ra ngoài range",
+          "hint": "lerp không clamp, transform mới clamp. Đúng rồi!"
+        }
+      ]
+    },
+    {
+      "id": "flutter-anim-003",
+      "lessonId": "flutter-animation",
+      "title": "Animation Sequence Player",
+      "conceptTags": ["sequence", "chain", "timeline", "easing"],
+      "difficulty": "advanced",
+      "instructions": "Tạo class `AnimSequence` chạy nhiều animation theo thứ tự:\n\n- Constructor `AnimSequence(List<int> durationsMs)` — danh sách duration của từng phase\n- Property `int currentPhase` — phase hiện tại (0-indexed)\n- Property `double phaseProgress` — progress trong phase hiện tại (0.0 → 1.0)\n- Method `bool get isComplete` — true khi tất cả phases hoàn thành\n- Method `tick(int elapsedMs)` advance animation:\n  - Tăng phaseProgress theo elapsedMs / currentPhaseDuration\n  - Khi phaseProgress >= 1.0: chuyển sang phase tiếp theo\n  - Clamp phase ở phase cuối\n- Method `totalDurationMs()` trả về tổng duration tất cả phases\n- Method `overallProgress()` trả về overall progress (0.0 → 1.0)\n- Method `describe()` trả về \"Seq(phase {current+1}/{total}, {phaseProgress%}, overall {overallProgress%})\"\n- Method `reset()` reset về phase 0, progress 0\n\nVí dụ:\n```\nfinal seq = AnimSequence([500, 300, 200]);\nseq.tick(250);  // Phase 1, 50%\nseq.describe() → 'Seq(phase 1/3, 50%, overall 25%)'\nseq.tick(300);  // Phase 2 complete\nseq.tick(200);  // Phase 3 complete\nseq.isComplete → true\nseq.overallProgress() → 1.0\n```",
+      "starterCode": "class AnimSequence {\n  final List<int> durationsMs;\n  int currentPhase = 0;\n  double phaseProgress = 0.0;\n\n  AnimSequence(this.durationsMs);\n\n  // TODO: Implement isComplete\n  bool get isComplete {\n    return false;\n  }\n\n  // TODO: Implement tick\n  void tick(int elapsedMs) {}\n\n  // TODO: Implement totalDurationMs\n  int totalDurationMs() {\n    return 0;\n  }\n\n  // TODO: Implement overallProgress\n  double overallProgress() {\n    return 0;\n  }\n\n  // TODO: Implement describe\n  String describe() {\n    return '';\n  }\n\n  // TODO: Implement reset\n  void reset() {}\n}\n\nvoid main() {\n  final seq = AnimSequence([500, 300, 200]);\n  print('Total: ${seq.totalDurationMs()}ms');\n\n  seq.tick(250);\n  print(seq.describe());\n\n  seq.tick(300);\n  print(seq.describe());\n\n  seq.tick(200);\n  print(seq.describe());\n  print('Complete: ${seq.isComplete}');\n\n  seq.reset();\n  print('After reset: ${seq.describe()}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('isComplete false initially', () {\n    final seq = AnimSequence([500]);\n    expect(seq.isComplete, isFalse);\n  });\n\n  test('tick advances phase progress', () {\n    final seq = AnimSequence([1000]);\n    seq.tick(500);\n    expect(seq.phaseProgress, closeTo(0.5, 0.01));\n  });\n\n  test('tick advances to next phase', () {\n    final seq = AnimSequence([500, 500]);\n    seq.tick(600);\n    expect(seq.currentPhase, equals(1));\n  });\n\n  test('isComplete true when all phases done', () {\n    final seq = AnimSequence([300, 200]);\n    seq.tick(300);\n    seq.tick(200);\n    expect(seq.isComplete, isTrue);\n  });\n\n  test('totalDurationMs sums all', () {\n    final seq = AnimSequence([100, 200, 300]);\n    expect(seq.totalDurationMs(), equals(600));\n  });\n\n  test('overallProgress calculates correctly', () {\n    final seq = AnimSequence([400, 400]);\n    seq.tick(600);\n    expect(seq.overallProgress(), closeTo(0.75, 0.01));\n  });\n\n  test('reset returns to initial state', () {\n    final seq = AnimSequence([500]);\n    seq.tick(500);\n    seq.reset();\n    expect(seq.currentPhase, equals(0));\n    expect(seq.phaseProgress, equals(0.0));\n  });\n}",
+      "solutionCode": "class AnimSequence {\n  final List<int> durationsMs;\n  int currentPhase = 0;\n  double phaseProgress = 0.0;\n\n  AnimSequence(this.durationsMs);\n\n  bool get isComplete {\n    return currentPhase >= durationsMs.length - 1 &&\n        phaseProgress >= 1.0;\n  }\n\n  void tick(int elapsedMs) {\n    if (isComplete) return;\n    if (durationsMs.isEmpty) return;\n\n    final duration = durationsMs[currentPhase];\n    phaseProgress += elapsedMs / duration;\n\n    while (phaseProgress >= 1.0 && currentPhase < durationsMs.length - 1) {\n      phaseProgress -= 1.0;\n      currentPhase++;\n      final nextDuration = durationsMs[currentPhase];\n      phaseProgress = phaseProgress * (duration / nextDuration);\n    }\n\n    if (phaseProgress >= 1.0) {\n      phaseProgress = 1.0;\n    }\n  }\n\n  int totalDurationMs() {\n    return durationsMs.fold(0, (sum, d) => sum + d);\n  }\n\n  double overallProgress() {\n    int elapsed = 0;\n    for (int i = 0; i < currentPhase; i++) {\n      elapsed += durationsMs[i];\n    }\n    elapsed += (phaseProgress * durationsMs[currentPhase]).toInt();\n    return elapsed / totalDurationMs();\n  }\n\n  String describe() {\n    final total = durationsMs.length;\n    final pp = (phaseProgress * 100).toInt();\n    final op = (overallProgress() * 100).toInt();\n    return 'Seq(phase ${currentPhase + 1}/$total, $pp%, overall $op%)';\n  }\n\n  void reset() {\n    currentPhase = 0;\n    phaseProgress = 0.0;\n  }\n}\n\nvoid main() {\n  final seq = AnimSequence([500, 300, 200]);\n  print('Total: ${seq.totalDurationMs()}ms');\n\n  seq.tick(250);\n  print(seq.describe());\n\n  seq.tick(300);\n  print(seq.describe());\n\n  seq.tick(200);\n  print(seq.describe());\n  print('Complete: ${seq.isComplete}');\n\n  seq.reset();\n  print('After reset: ${seq.describe()}');\n}",
+      "hints": [
+        "isComplete: currentPhase == last AND phaseProgress >= 1.0",
+        "tick: phaseProgress += elapsedMs / duration; khi >= 1.0 thì chuyển phase",
+        "overallProgress: tính tổng elapsed từ các phase trước + progress hiện tại, chia cho total"
+      ],
+      "expectedConcepts": ["sequence", "timeline", "phase_progress", "overall_progress"],
+      "commonMistakes": [
+        {
+          "id": "wrong_progress_calc",
+          "pattern": "return currentPhase / durationsMs.length;",
+          "explanation": "Không tính progress trong phase hiện tại, chỉ lấy phase index",
+          "hint": "Cộng thêm phaseProgress * currentDuration / totalDuration"
+        }
+      ]
+    },
+    {
+      "id": "flutter-anim-004",
+      "lessonId": "flutter-animation",
+      "title": "Easing Curve Calculator",
+      "conceptTags": ["easing", "curve", "math", "interpolation"],
+      "difficulty": "intermediate",
+      "instructions": "Tạo class `EasingCurve` mô phỏng animation easing curves:\n\n- Constructor `EasingCurve(String name)` — tên curve: 'linear', 'easeIn', 'easeOut', 'easeInOut'\n- Method `double apply(double t)` — áp dụng curve vào t ∈ [0,1]:\n  - 'linear': return t\n  - 'easeIn': return t * t\n  - 'easeOut': return 1 - (1 - t) * (1 - t)\n  - 'easeInOut': nếu t < 0.5 → 2*t*t, else → 1 - (-2*t + 2)^2 / 2\n- Method `List<double> sample(int steps)` trả về list values từ 0 → 1 với `steps` samples:\n  - VD: sample(4) → [apply(0.0), apply(0.33), apply(0.67), apply(1.0)]\n- Method `double speed(double t)` — đạo hàm (speed) tại điểm t:\n  - 'linear': 1.0\n  - 'easeIn': 2*t\n  - 'easeOut': 2*(1-t)\n  - 'easeInOut': nếu t<0.5 → 4*t, else → -4*(1-t)\n- Method `describe()` trả về \"EasingCurve({name})\"\n\nVí dụ:\n```\nfinal curve = EasingCurve('easeIn');\ncurve.apply(0.5) → 0.25\ncurve.speed(0.5) → 1.0\ncurve.sample(3) → [0.0, 0.11, 1.0]\n```",
+      "starterCode": "class EasingCurve {\n  final String name;\n\n  EasingCurve(this.name);\n\n  // TODO: Implement apply\n  double apply(double t) {\n    return t;\n  }\n\n  // TODO: Implement sample\n  List<double> sample(int steps) {\n    return [];\n  }\n\n  // TODO: Implement speed\n  double speed(double t) {\n    return 1.0;\n  }\n\n  // TODO: Implement describe\n  String describe() => '';\n}\n\nvoid main() {\n  for (final name in ['linear', 'easeIn', 'easeOut', 'easeInOut']) {\n    final curve = EasingCurve(name);\n    print('${curve.describe()}: apply(0.5)=${curve.apply(0.5)}, speed(0.5)=${curve.speed(0.5)}');\n    print('  sample(5)=${curve.sample(5)}');\n  }\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('linear returns t', () {\n    final c = EasingCurve('linear');\n    expect(c.apply(0.5), equals(0.5));\n  });\n\n  test('easeIn returns t^2', () {\n    final c = EasingCurve('easeIn');\n    expect(c.apply(0.5), equals(0.25));\n  });\n\n  test('easeOut returns 1-(1-t)^2', () {\n    final c = EasingCurve('easeOut');\n    expect(c.apply(0.5), equals(0.75));\n  });\n\n  test('easeInOut first half', () {\n    final c = EasingCurve('easeInOut');\n    expect(c.apply(0.25), closeTo(0.125, 0.001));\n  });\n\n  test('sample returns correct length', () {\n    final c = EasingCurve('linear');\n    expect(c.sample(5).length, equals(5));\n  });\n\n  test('sample starts at 0 ends at 1', () {\n    final c = EasingCurve('easeIn');\n    final s = c.sample(10);\n    expect(s.first, equals(0.0));\n    expect(s.last, closeTo(1.0, 0.01));\n  });\n\n  test('speed linear is constant', () {\n    final c = EasingCurve('linear');\n    expect(c.speed(0.0), equals(1.0));\n    expect(c.speed(0.5), equals(1.0));\n    expect(c.speed(1.0), equals(1.0));\n  });\n\n  test('speed easeIn at 0 is 0', () {\n    final c = EasingCurve('easeIn');\n    expect(c.speed(0.0), equals(0.0));\n  });\n}",
+      "solutionCode": "class EasingCurve {\n  final String name;\n\n  EasingCurve(this.name);\n\n  double apply(double t) {\n    switch (name) {\n      case 'linear':\n        return t;\n      case 'easeIn':\n        return t * t;\n      case 'easeOut':\n        return 1 - (1 - t) * (1 - t);\n      case 'easeInOut':\n        if (t < 0.5) return 2 * t * t;\n        return 1 - (-2 * t + 2) * (-2 * t + 2) / 2;\n      default:\n        return t;\n    }\n  }\n\n  List<double> sample(int steps) {\n    return List.generate(steps, (i) => apply(i / (steps - 1)));\n  }\n\n  double speed(double t) {\n    switch (name) {\n      case 'linear':\n        return 1.0;\n      case 'easeIn':\n        return 2 * t;\n      case 'easeOut':\n        return 2 * (1 - t);\n      case 'easeInOut':\n        if (t < 0.5) return 4 * t;\n        return -4 * (1 - t);\n      default:\n        return 1.0;\n    }\n  }\n\n  String describe() => 'EasingCurve($name)';\n}\n\nvoid main() {\n  for (final name in ['linear', 'easeIn', 'easeOut', 'easeInOut']) {\n    final curve = EasingCurve(name);\n    print('${curve.describe()}: apply(0.5)=${curve.apply(0.5)}, speed(0.5)=${curve.speed(0.5)}');\n    print('  sample(5)=${curve.sample(5)}');\n  }\n}",
+      "hints": [
+        "apply: dùng switch statement cho từng loại curve",
+        "sample: List.generate(steps, (i) => apply(i / (steps - 1)))",
+        "speed: đạo hàm — easeIn: 2*t, easeOut: 2*(1-t)"
+      ],
+      "expectedConcepts": ["easing", "switch", "math", "generate"],
+      "commonMistakes": [
+        {
+          "id": "wrong_sample_range",
+          "pattern": "List.generate(steps, (i) => apply(i / steps))",
+          "explanation": "Sample không bao gồm t=1.0 ở cuối",
+          "hint": "Dùng i / (steps - 1) để sample từ 0 đến 1"
+        }
+      ]
+    },
+    {
+      "id": "flutter-anim-005",
+      "lessonId": "flutter-animation",
+      "title": "Spring Physics Simulator",
+      "conceptTags": ["spring", "physics", "damping", "oscillation"],
+      "difficulty": "advanced",
+      "instructions": "Tạo class `SpringSimulation` mô phỏng spring physics:\n\n- Constructor `SpringSimulation(double stiffness, double damping, {double mass = 1.0})`\n- Method `double position(double t)` — vị trí tại thời gian t:\n  - Nếu damping > 0 và stiffness > 0:\n    - omega = sqrt(stiffness / mass)\n    - zeta = damping / (2 * sqrt(stiffness * mass))\n    - Nếu zeta < 1 (underdamped): e^(-zeta*omega*t) * cos(omega*t * sqrt(1-zeta^2))\n    - Nếu zeta >= 1 (overdamped/critical): 1 - e^(-omega*t) * (1 + omega*t)\n  - Nếu không: return 0.0\n- Method `double velocity(double t)` — velocity (đạo hàm):\n  - Underdamped: tương ứng đạo hàm\n  - Đơn giản: dùng numerical derivative (position(t+0.001) - position(t)) / 0.001\n- Method `bool get isSettled` — true nếu tại t=10, |position(10) - 1.0| < 0.01\n- Method `String get dampingType` — 'underdamped' / 'critically_damped' / 'overdamped'\n- Method `describe()`返回 \"Spring(k={stiffness}, c={damping}, m={mass}, {dampingType})\"\n\nVí dụ:\n```\nfinal spring = SpringSimulation(100.0, 10.0);\nspring.position(0.0) → ~1.0 (initial displacement)\nspring.dampingType → 'underdamped'\nspring.describe() → 'Spring(k=100.0, c=10.0, m=1.0, underdamped)'\n```",
+      "starterCode": "import 'dart:math';\n\nclass SpringSimulation {\n  final double stiffness;\n  final double damping;\n  final double mass;\n\n  SpringSimulation(this.stiffness, this.damping, {this.mass = 1.0});\n\n  // TODO: Implement position\n  double position(double t) {\n    return 0.0;\n  }\n\n  // TODO: Implement velocity (numerical derivative)\n  double velocity(double t) {\n    return 0.0;\n  }\n\n  // TODO: Implement get isSettled\n  bool get isSettled => false;\n\n  // TODO: Implement get dampingType\n  String get dampingType => '';\n\n  // TODO: Implement describe\n  String describe() => '';\n}\n\nvoid main() {\n  final spring = SpringSimulation(100.0, 10.0);\n  print(spring.describe());\n  print('Position at 0: ${spring.position(0.0)}');\n  print('Position at 0.5: ${spring.position(0.5)}');\n  print('Velocity at 0: ${spring.velocity(0.0)}');\n  print('Settled: ${spring.isSettled}');\n\n  final overdamped = SpringSimulation(100.0, 50.0);\n  print(overdamped.describe());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('position at t=0 is ~1.0', () {\n    final s = SpringSimulation(100.0, 10.0);\n    expect(s.position(0.0), closeTo(1.0, 0.01));\n  });\n\n  test('velocity at t=0 is ~0', () {\n    final s = SpringSimulation(100.0, 10.0);\n    expect(s.velocity(0.0), closeTo(0.0, 0.5));\n  });\n\n  test('underdamped detected', () {\n    final s = SpringSimulation(100.0, 10.0);\n    expect(s.dampingType, equals('underdamped'));\n  });\n\n  test('overdamped detected', () {\n    final s = SpringSimulation(100.0, 50.0);\n    expect(s.dampingType, equals('overdamped'));\n  });\n\n  test('critically damped detected', () {\n    final s = SpringSimulation(100.0, 20.0);\n    expect(s.dampingType, equals('critically_damped'));\n  });\n\n  test('describe formats correctly', () {\n    final s = SpringSimulation(100.0, 10.0, mass: 2.0);\n    expect(s.describe(), contains('k=100.0'));\n    expect(s.describe(), contains('m=2.0'));\n  });\n}",
+      "solutionCode": "import 'dart:math';\n\nclass SpringSimulation {\n  final double stiffness;\n  final double damping;\n  final double mass;\n\n  SpringSimulation(this.stiffness, this.damping, {this.mass = 1.0});\n\n  double position(double t) {\n    if (stiffness <= 0) return 0.0;\n\n    final omega = sqrt(stiffness / mass);\n    final zeta = damping / (2 * sqrt(stiffness * mass));\n\n    if (zeta < 1) {\n      final wd = omega * sqrt(1 - zeta * zeta);\n      return exp(-zeta * omega * t) * cos(wd * t);\n    } else {\n      return 1 - exp(-omega * t) * (1 + omega * t);\n    }\n  }\n\n  double velocity(double t) {\n    final dt = 0.001;\n    return (position(t + dt) - position(t)) / dt;\n  }\n\n  bool get isSettled {\n    return (position(10.0) - 1.0).abs() < 0.01;\n  }\n\n  String get dampingType {\n    if (stiffness <= 0) return 'unknown';\n    final zeta = damping / (2 * sqrt(stiffness * mass));\n    if (zeta < 1) return 'underdamped';\n    if (zeta == 1) return 'critically_damped';\n    return 'overdamped';\n  }\n\n  String describe() => 'Spring(k=$stiffness, c=$damping, m=$mass, $dampingType)';\n}\n\nvoid main() {\n  final spring = SpringSimulation(100.0, 10.0);\n  print(spring.describe());\n  print('Position at 0: ${spring.position(0.0)}');\n  print('Position at 0.5: ${spring.position(0.5)}');\n  print('Velocity at 0: ${spring.velocity(0.0)}');\n  print('Settled: ${spring.isSettled}');\n\n  final overdamped = SpringSimulation(100.0, 50.0);\n  print(overdamped.describe());\n}",
+      "hints": [
+        "omega = sqrt(stiffness / mass)",
+        "zeta = damping / (2 * sqrt(stiffness * mass))",
+        "Underdamped (zeta < 1): e^(-zeta*omega*t) * cos(wd*t)",
+        "Velocity: dùng numerical derivative với dt = 0.001"
+      ],
+      "expectedConcepts": ["spring_physics", "damping", "exponential", "trigonometry"],
+      "commonMistakes": [
+        {
+          "id": "wrong_zeta_formula",
+          "pattern": "damping / (2 * stiffness)",
+          "explanation": "Công thức zeta sai",
+          "hint": "zeta = damping / (2 * sqrt(stiffness * mass))"
+        }
+      ]
+    }
+  ]
+}

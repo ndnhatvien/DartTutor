@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface DartPadEmbedProps {
   initialCode: string;
@@ -18,23 +18,39 @@ export default function DartPadEmbed({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
+  const lastCodeRef = useRef(initialCode);
+
+  const sendCodeToDartPad = useCallback((code: string) => {
+    if (!iframeRef.current?.contentWindow) return;
+    lastCodeRef.current = code;
+    setConsoleOutput([]);
+    iframeRef.current.contentWindow.postMessage({ type: 'sourceCode', sourceCode: code }, '*');
+  }, []);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== 'https://dartpad.dev') return;
-
       try {
         const data = event.data;
+        if (!data || typeof data !== 'object') return;
 
         if (data.type === 'ready') {
           setIsReady(true);
           onReady?.();
+          sendCodeToDartPad(initialCode);
         } else if (data.type === 'consoleOutput') {
           const output = data.message || '';
           setConsoleOutput((prev) => [...prev, output]);
           onConsoleOutput?.(output);
+        } else if (data.type === 'compilationResult') {
+          if (data.success === false || data.error) {
+            onCompilationError?.(data.error || data.message || 'Compilation error');
+          }
         } else if (data.type === 'compilationError') {
           onCompilationError?.(data.message || 'Compilation error');
+        } else if (data.type === 'message') {
+          if (data.isError) {
+            onCompilationError?.(data.message || 'Error');
+          }
         }
       } catch (error) {
         console.error('DartPad message parsing error:', error);
@@ -43,45 +59,23 @@ export default function DartPadEmbed({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [onReady, onConsoleOutput, onCompilationError]);
+  }, [onReady, onConsoleOutput, onCompilationError, sendCodeToDartPad, initialCode]);
 
   const runCode = () => {
-    if (!isReady || !iframeRef.current?.contentWindow) {
-      console.warn('DartPad not ready');
-      return;
-    }
-
-    setConsoleOutput([]);
-    iframeRef.current.contentWindow.postMessage(
-      {
-        command: 'execute',
-        code: initialCode,
-      },
-      'https://dartpad.dev'
-    );
+    sendCodeToDartPad(lastCodeRef.current);
   };
 
   const runTests = () => {
-    if (!isReady || !iframeRef.current?.contentWindow || !testCode) {
-      console.warn('DartPad not ready or no test code');
-      return;
-    }
-
-    setConsoleOutput([]);
-    iframeRef.current.contentWindow.postMessage(
-      {
-        command: 'execute',
-        code: `${initialCode}\n\n${testCode}`,
-      },
-      'https://dartpad.dev'
-    );
+    if (!testCode) return;
+    const combinedCode = `${lastCodeRef.current}\n\n${testCode}`;
+    sendCodeToDartPad(combinedCode);
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <iframe
         ref={iframeRef}
-        src="https://dartpad.dev/embed-inline.html?theme=dark&run=false"
+        src="https://dartpad.dev/?embed=true&theme=dark&run=true"
         style={{
           width: '100%',
           flex: 1,
@@ -90,7 +84,6 @@ export default function DartPadEmbed({
           minHeight: '400px',
         }}
         title="DartPad Editor"
-        sandbox="allow-scripts allow-same-origin"
       />
 
       <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>

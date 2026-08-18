@@ -1,0 +1,88 @@
+{
+  "id": "flutter-state",
+  "title": "Flutter State Management",
+  "description": "Quản lý trạng thái trong Flutter: setState,_VALUEnotifier, observable pattern",
+  "objectives": [
+    "Hiểu khái niệm state trong Flutter",
+    "Triển khai setState pattern bằng Dart thuần",
+    "Sử dụng observer pattern để notify listeners"
+  ],
+  "prerequisites": ["flutter-basics"],
+  "exercises": [
+    {
+      "id": "flutter-state-001",
+      "lessonId": "flutter-state",
+      "title": "Simple State Store",
+      "conceptTags": ["state", "get", "set", "notify"],
+      "difficulty": "beginner",
+      "instructions": "Tạo class `StateStore` mô phỏng state management:\n\n- Private field `Map<String, dynamic> _state`\n- Method `get(String key)` trả về giá trị, hoặc `null` nếu không tồn tại\n- Method `set(String key, dynamic value)` cập nhật giá trị\n- Method `getAll()` trả về bản sao của toàn bộ state\n- Method `describe()` trả về \"State(keys: {count}): {key1}={value1}, {key2}={value2}\"\n\nVí dụ:\n```\nfinal store = StateStore();\nstore.set('count', 0);\nstore.set('name', 'Alice');\nstore.get('count') → 0\nstore.describe() → \"State(keys: 2): count=0, name=Alice\"\n```",
+      "starterCode": "class StateStore {\n  final Map<String, dynamic> _state = {};\n\n  // TODO: Implement get\n  dynamic get(String key) {\n    return null;\n  }\n\n  // TODO: Implement set\n  void set(String key, dynamic value) {}\n\n  // TODO: Implement getAll (bản sao)\n  Map<String, dynamic> getAll() {\n    return {};\n  }\n\n  // TODO: Implement describe\n  String describe() {\n    return '';\n  }\n}\n\nvoid main() {\n  final store = StateStore();\n  store.set('count', 0);\n  store.set('name', 'Alice');\n  print('Count: ${store.get('count')}');\n  print(store.describe());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('get returns value', () {\n    final store = StateStore();\n    store.set('count', 42);\n    expect(store.get('count'), equals(42));\n  });\n\n  test('get returns null for missing key', () {\n    final store = StateStore();\n    expect(store.get('missing'), isNull);\n  });\n\n  test('getAll returns copy', () {\n    final store = StateStore();\n    store.set('a', 1);\n    final all = store.getAll();\n    all['b'] = 2;\n    expect(store.get('b'), isNull);\n  });\n\n  test('describe shows keys and values', () {\n    final store = StateStore();\n    store.set('count', 0);\n    store.set('name', 'Alice');\n    expect(store.describe(), equals('State(keys: 2): count=0, name=Alice'));\n  });\n}",
+      "solutionCode": "class StateStore {\n  final Map<String, dynamic> _state = {};\n\n  dynamic get(String key) {\n    return _state[key];\n  }\n\n  void set(String key, dynamic value) {\n    _state[key] = value;\n  }\n\n  Map<String, dynamic> getAll() {\n    return Map.from(_state);\n  }\n\n  String describe() {\n    final entries = _state.entries.map((e) => '${e.key}=${e.value}').join(', ');\n    return 'State(keys: ${_state.length}): $entries';\n  }\n}\n\nvoid main() {\n  final store = StateStore();\n  store.set('count', 0);\n  store.set('name', 'Alice');\n  print('Count: ${store.get('count')}');\n  print(store.describe());\n}",
+      "hints": [
+        "get đơn giản: return _state[key]; (trả về null nếu key không tồn tại)",
+        "getAll(): return Map.from(_state); để tạo bản sao",
+        "describe(): dùng entries.map() rồi join(', ') để tạo chuỗi"
+      ],
+      "expectedConcepts": ["map", "encapsulation", "copy", "string_format"],
+      "commonMistakes": [
+        {
+          "id": "return_reference",
+          "pattern": "return _state;",
+          "explanation": "Trả về reference thay vì bản sao, caller có thể modify internal state",
+          "hint": "Dùng Map.from(_state) để trả về bản sao"
+        }
+      ]
+    },
+    {
+      "id": "flutter-state-002",
+      "lessonId": "flutter-state",
+      "title": "ValueNotifier Pattern",
+      "conceptTags": ["notifier", "listener", "observer", "callback"],
+      "difficulty": "intermediate",
+      "instructions": "Tạo class `ValueNotifier<T>` mô phỏng Flutter's ValueNotifier:\n\n- Property `T _value` (private)\n- Getter `value` trả về giá trị hiện tại\n- Setter `value` cập nhật giá trị và gọi tất cả listeners nếu giá trị thay đổi\n- Method `addListener(Function listener)` đăng ký listener\n- Method `removeListener(Function listener)` bỏ listener\n- Method `dispose()` xóa tất cả listeners\n\nVí dụ:\n```\nfinal notifier = ValueNotifier(0);\nint notifiedCount = 0;\nnotifier.addListener(() { notifiedCount++; });\nnotifier.value = 1;  // notifiedCount = 1\nnotifier.value = 1;  // notifiedCount = 1 (giá trị giống, không notify)\nnotifier.value = 2;  // notifiedCount = 2\n```",
+      "starterCode": "class ValueNotifier<T> {\n  T _value;\n  // TODO: Khai báo list listeners\n\n  ValueNotifier(this._value);\n\n  // TODO: Implement getter value\n  T get value => _value;\n\n  // TODO: Implement setter value (notify listeners nếu thay đổi)\n  set value(T newValue) {}\n\n  // TODO: Implement addListener\n  void addListener(Function listener) {}\n\n  // TODO: Implement removeListener\n  void removeListener(Function listener) {}\n\n  // TODO: Implement dispose\n  void dispose() {}\n}\n\nvoid main() {\n  final notifier = ValueNotifier(0);\n  int notifiedCount = 0;\n  notifier.addListener(() { notifiedCount++; });\n\n  notifier.value = 1;\n  print('After 1: notified=$notifiedCount, value=${notifier.value}');\n\n  notifier.value = 1;\n  print('After same: notified=$notifiedCount');\n\n  notifier.value = 2;\n  print('After 2: notified=$notifiedCount, value=${notifier.value}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('value getter returns current value', () {\n    final notifier = ValueNotifier(42);\n    expect(notifier.value, equals(42));\n  });\n\n  test('listener called on value change', () {\n    final notifier = ValueNotifier(0);\n    int count = 0;\n    notifier.addListener(() { count++; });\n    notifier.value = 1;\n    expect(count, equals(1));\n  });\n\n  test('listener not called on same value', () {\n    final notifier = ValueNotifier(0);\n    int count = 0;\n    notifier.addListener(() { count++; });\n    notifier.value = 0;\n    expect(count, equals(0));\n  });\n\n  test('removeListener stops notifications', () {\n    final notifier = ValueNotifier(0);\n    int count = 0;\n    final listener = () { count++; };\n    notifier.addListener(listener);\n    notifier.value = 1;\n    notifier.removeListener(listener);\n    notifier.value = 2;\n    expect(count, equals(1));\n  });\n\n  test('dispose clears all listeners', () {\n    final notifier = ValueNotifier(0);\n    int count = 0;\n    notifier.addListener(() { count++; });\n    notifier.dispose();\n    notifier.value = 1;\n    expect(count, equals(0));\n  });\n}",
+      "solutionCode": "class ValueNotifier<T> {\n  T _value;\n  final List<Function> _listeners = [];\n\n  ValueNotifier(this._value);\n\n  T get value => _value;\n\n  set value(T newValue) {\n    if (_value == newValue) return;\n    _value = newValue;\n    for (final listener in _listeners) {\n      listener();\n    }\n  }\n\n  void addListener(Function listener) {\n    _listeners.add(listener);\n  }\n\n  void removeListener(Function listener) {\n    _listeners.remove(listener);\n  }\n\n  void dispose() {\n    _listeners.clear();\n  }\n}\n\nvoid main() {\n  final notifier = ValueNotifier(0);\n  int notifiedCount = 0;\n  notifier.addListener(() { notifiedCount++; });\n\n  notifier.value = 1;\n  print('After 1: notified=$notifiedCount, value=${notifier.value}');\n\n  notifier.value = 1;\n  print('After same: notified=$notifiedCount');\n\n  notifier.value = 2;\n  print('After 2: notified=$notifiedCount, value=${notifier.value}');\n}",
+      "hints": [
+        "Khai báo listeners: final List<Function> _listeners = [];",
+        "Setter: kiểm tra if (_value == newValue) return; trước khi update",
+        "Trong setter, sau khi update giá trị, duyệt qua _listeners và gọi từng listener()"
+      ],
+      "expectedConcepts": ["observer_pattern", "listener", "setter", "equality_check"],
+      "commonMistakes": [
+        {
+          "id": "always_notify",
+          "pattern": "set value(T newValue) { _value = newValue; ... }",
+          "explanation": "Luôn notify kể cả giá trị không đổi, gây redundant updates",
+          "hint": "Thêm if (_value == newValue) return; ở đầu setter"
+        }
+      ]
+    },
+    {
+      "id": "flutter-state-003",
+      "lessonId": "flutter-state",
+      "title": "ChangeNotifier Aggregator",
+      "conceptTags": ["aggregation", "multi_state", "combine", "stream"],
+      "difficulty": "advanced",
+      "instructions": "Tạo class `StateAggregator` kết hợp nhiều ValueNotifier:\n\n- Constructor `StateAggregator(Map<String, dynamic> initialValues)`\n- Method `update(String key, dynamic value)` cập nhật giá trị\n- Method `get(String key)` trả về giá trị\n- Method `onChange(String key, Function callback)` đăng ký callback khi key thay đổi\n- Method `onChangeAll(Function callback)` đăng ký callback khi bất kỳ key nào thay đổi\n- Method `snapshot()` trả về Map copy toàn bộ state\n- Method `describe()` trả về \"Aggregator({key1}={v1}, {key2}={v2})\"\n\nVí dụ:\n```\nfinal agg = StateAggregator({'count': 0, 'name': 'Alice'});\nagg.onChange('count', () => print('count changed'));\nagg.onChangeAll(() => print('something changed'));\nagg.update('count', 1);  // print: count changed, something changed\nagg.update('name', 'Bob');  // print: something changed only\n```",
+      "starterCode": "class StateAggregator {\n  final Map<String, dynamic> _state = {};\n  final Map<String, List<Function>> _keyListeners = {};\n  final List<Function> _globalListeners = [];\n\n  StateAggregator(Map<String, dynamic> initialValues) {\n    _state.addAll(initialValues);\n  }\n\n  // TODO: Implement get\n  dynamic get(String key) {\n    return null;\n  }\n\n  // TODO: Implement update (notify key-specific + global listeners)\n  void update(String key, dynamic value) {}\n\n  // TODO: Implement onChange\n  void onChange(String key, Function callback) {}\n\n  // TODO: Implement onChangeAll\n  void onChangeAll(Function callback) {}\n\n  // TODO: Implement snapshot\n  Map<String, dynamic> snapshot() {\n    return {};\n  }\n\n  // TODO: Implement describe\n  String describe() {\n    return '';\n  }\n}\n\nvoid main() {\n  final agg = StateAggregator({'count': 0, 'name': 'Alice'});\n  final events = <String>[];\n\n  agg.onChange('count', () => events.add('count'));\n  agg.onChangeAll(() => events.add('global'));\n\n  agg.update('count', 1);\n  agg.update('name', 'Bob');\n\n  print('Events: $events');\n  print(agg.describe());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('get returns initial value', () {\n    final agg = StateAggregator({'x': 10});\n    expect(agg.get('x'), equals(10));\n  });\n\n  test('update changes value', () {\n    final agg = StateAggregator({'x': 10});\n    agg.update('x', 20);\n    expect(agg.get('x'), equals(20));\n  });\n\n  test('onChange fires on key change', () {\n    final agg = StateAggregator({'x': 10});\n    var fired = false;\n    agg.onChange('x', () { fired = true; });\n    agg.update('x', 20);\n    expect(fired, isTrue);\n  });\n\n  test('onChange not fired on different key', () {\n    final agg = StateAggregator({'x': 10, 'y': 20});\n    var fired = false;\n    agg.onChange('x', () { fired = true; });\n    agg.update('y', 30);\n    expect(fired, isFalse);\n  });\n\n  test('onChangeAll fires on any change', () {\n    final agg = StateAggregator({'x': 10});\n    var count = 0;\n    agg.onChangeAll(() { count++; });\n    agg.update('x', 20);\n    agg.update('x', 30);\n    expect(count, equals(2));\n  });\n\n  test('snapshot returns copy', () {\n    final agg = StateAggregator({'x': 10});\n    final snap = agg.snapshot();\n    snap['x'] = 999;\n    expect(agg.get('x'), equals(10));\n  });\n\n  test('describe returns correct format', () {\n    final agg = StateAggregator({'a': 1, 'b': 2});\n    expect(agg.describe(), equals('Aggregator(a=1, b=2)'));\n  });\n}",
+      "solutionCode": "class StateAggregator {\n  final Map<String, dynamic> _state = {};\n  final Map<String, List<Function>> _keyListeners = {};\n  final List<Function> _globalListeners = [];\n\n  StateAggregator(Map<String, dynamic> initialValues) {\n    _state.addAll(initialValues);\n  }\n\n  dynamic get(String key) {\n    return _state[key];\n  }\n\n  void update(String key, dynamic value) {\n    if (_state[key] == value) return;\n    _state[key] = value;\n\n    final keyCallbacks = _keyListeners[key];\n    if (keyCallbacks != null) {\n      for (final cb in keyCallbacks) {\n        cb();\n      }\n    }\n\n    for (final cb in _globalListeners) {\n      cb();\n    }\n  }\n\n  void onChange(String key, Function callback) {\n    _keyListeners.putIfAbsent(key, () => []).add(callback);\n  }\n\n  void onChangeAll(Function callback) {\n    _globalListeners.add(callback);\n  }\n\n  Map<String, dynamic> snapshot() {\n    return Map.from(_state);\n  }\n\n  String describe() {\n    final entries = _state.entries.map((e) => '${e.key}=${e.value}').join(', ');\n    return 'Aggregator($entries)';\n  }\n}\n\nvoid main() {\n  final agg = StateAggregator({'count': 0, 'name': 'Alice'});\n  final events = <String>[];\n\n  agg.onChange('count', () => events.add('count'));\n  agg.onChangeAll(() => events.add('global'));\n\n  agg.update('count', 1);\n  agg.update('name', 'Bob');\n\n  print('Events: $events');\n  print(agg.describe());\n}",
+      "hints": [
+        "Dùng putIfAbsent để lazy-init list listeners cho mỗi key",
+        "Trong update: gọi key listeners TRƯỚC, sau đó gọi global listeners",
+        "snapshot() dùng Map.from(_state) để trả về bản sao"
+      ],
+      "expectedConcepts": ["observer_pattern", "aggregation", "putIfAbsent", "callback"],
+      "commonMistakes": [
+        {
+          "id": "missing_putIfAbsent",
+          "pattern": "_keyListeners[key] = []",
+          "explanation": "Ghi đè list listeners cũ khi key đã có listeners",
+          "hint": "Dùng _keyListeners.putIfAbsent(key, () => []).add(callback)"
+        }
+      ]
+    }
+  ]
+}

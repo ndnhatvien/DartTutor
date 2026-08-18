@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Exercise } from '../content/types';
 import { createExerciseResult } from '../evaluator/dartpad-adapter';
 import type { ExerciseResult } from '../evaluator/types';
-import { LearnerStateManager } from '../learner/state-manager';
+import { learnerStateManager } from '../learner/singleton';
 import { HybridTutorProvider } from '../tutor/hybrid-provider';
 import type { TutorContext, TutorResponse } from '../tutor/types';
 import DartPadEmbed from './DartPadEmbed';
@@ -12,8 +12,6 @@ interface ExerciseViewProps {
   onBack: () => void;
   onNextExercise?: () => void;
 }
-
-const learnerStateManager = new LearnerStateManager();
 
 export default function ExerciseView({ exercise, onBack, onNextExercise }: ExerciseViewProps) {
   const [consoleMessages, setConsoleMessages] = useState<string[]>([]);
@@ -114,7 +112,7 @@ export default function ExerciseView({ exercise, onBack, onNextExercise }: Exerc
       hintsRequested: state?.hintsRequested || 0,
       solutionRequested: state?.solutionRequested || false,
       lastResult: result,
-      userCode: '', // TODO: get from DartPad when editor exposed
+      userCode: exercise.starterCode,
       misconceptions: [],
       conceptsMastered: [],
     };

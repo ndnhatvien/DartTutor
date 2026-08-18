@@ -102,20 +102,18 @@ export class LearnerStateManager {
     return conceptState?.mastery || 0;
   }
 
-  getProgress(lessonId: string): { completed: number; total: number } {
+  getProgress(lessonId: string, exerciseCount: number): { completed: number; total: number } {
     let completed = 0;
-    let total = 0;
 
     for (const [, exerciseState] of this.state.exercises) {
       if (exerciseState.lessonId === lessonId) {
-        total++;
         if (exerciseState.state === 'passed' || exerciseState.state === 'mastered') {
           completed++;
         }
       }
     }
 
-    return { completed, total };
+    return { completed, total: exerciseCount };
   }
 
   private updateConceptState(concept: string, passed: boolean): void {

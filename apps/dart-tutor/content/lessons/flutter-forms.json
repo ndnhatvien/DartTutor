@@ -1,0 +1,89 @@
+{
+  "id": "flutter-forms",
+  "title": "Flutter Forms",
+  "description": "Xử lý form trong Flutter: validation, form state, field controllers",
+  "objectives": [
+    "Triển khai form validation bằng Dart",
+    "Quản lý form state và field values",
+    "Xử lý form submission và error display"
+  ],
+  "prerequisites": ["flutter-basics", "flutter-state"],
+  "exercises": [
+    {
+      "id": "flutter-form-001",
+      "lessonId": "flutter-forms",
+      "title": "Field Validator",
+      "conceptTags": ["validation", "email", "required", "regex"],
+      "difficulty": "beginner",
+      "instructions": "Tạo class `FieldValidator` với các static methods validation:\n\n- `required(String value)` — trả về error message nếu rỗng/whitespace, hoặc null nếu hợp lệ\n- `email(String value)` — trả về error message nếu không phải email hợp lệ, hoặc null\n- `minLength(String value, int min)` — trả về error message nếu length < min, hoặc null\n- `maxLength(String value, int max)` — trả về error message nếu length > max, hoặc null\n\nEmail validation: phải chứa `@` và `.` sau `@`\n\nVí dụ:\n```\nFieldValidator.required('') → 'Trường này không được để trống'\nFieldValidator.required('hello') → null\nFieldValidator.email('invalid') → 'Email không hợp lệ'\nFieldValidator.email('a@b.com') → null\nFieldValidator.minLength('hi', 3) → 'Tối thiểu 3 ký tự'\n```",
+      "starterCode": "class FieldValidator {\n  // TODO: Implement required\n  static String? required(String value) {\n    return null;\n  }\n\n  // TODO: Implement email\n  static String? email(String value) {\n    return null;\n  }\n\n  // TODO: Implement minLength\n  static String? minLength(String value, int min) {\n    return null;\n  }\n\n  // TODO: Implement maxLength\n  static String? maxLength(String value, int max) {\n    return null;\n  }\n}\n\nvoid main() {\n  print('Empty: ${FieldValidator.required(\"\")}');\n  print('Name: ${FieldValidator.required(\"Alice\")}');\n  print('Bad email: ${FieldValidator.email(\"invalid\")}');\n  print('Good email: ${FieldValidator.email(\"a@b.com\")}');\n  print('Short: ${FieldValidator.minLength(\"hi\", 3)}');\n  print('Long enough: ${FieldValidator.minLength(\"hello\", 3)}');\n  print('Too long: ${FieldValidator.maxLength(\"toolong\", 5)}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('required rejects empty', () {\n    expect(FieldValidator.required(''), equals('Trường này không được để trống'));\n  });\n\n  test('required rejects whitespace', () {\n    expect(FieldValidator.required('   '), equals('Trường này không được để trống'));\n  });\n\n  test('required accepts valid', () {\n    expect(FieldValidator.required('hello'), isNull);\n  });\n\n  test('email rejects invalid', () {\n    expect(FieldValidator.email('invalid'), equals('Email không hợp lệ'));\n  });\n\n  test('email accepts valid', () {\n    expect(FieldValidator.email('a@b.com'), isNull);\n  });\n\n  test('minLength rejects short', () {\n    expect(FieldValidator.minLength('hi', 3), equals('Tối thiểu 3 ký tự'));\n  });\n\n  test('minLength accepts long enough', () {\n    expect(FieldValidator.minLength('hello', 3), isNull);\n  });\n\n  test('maxLength rejects long', () {\n    expect(FieldValidator.maxLength('toolong', 5), equals('Tối đa 5 ký tự'));\n  });\n\n  test('maxLength accepts short enough', () {\n    expect(FieldValidator.maxLength('ok', 5), isNull);\n  });\n}",
+      "solutionCode": "class FieldValidator {\n  static String? required(String value) {\n    if (value.trim().isEmpty) {\n      return 'Trường này không được để trống';\n    }\n    return null;\n  }\n\n  static String? email(String value) {\n    if (!value.contains('@') || !value.substring(value.indexOf('@') + 1).contains('.')) {\n      return 'Email không hợp lệ';\n    }\n    return null;\n  }\n\n  static String? minLength(String value, int min) {\n    if (value.length < min) {\n      return 'Tối thiểu $min ký tự';\n    }\n    return null;\n  }\n\n  static String? maxLength(String value, int max) {\n    if (value.length > max) {\n      return 'Tối đa $max ký tự';\n    }\n    return null;\n  }\n}\n\nvoid main() {\n  print('Empty: ${FieldValidator.required(\"\")}');\n  print('Name: ${FieldValidator.required(\"Alice\")}');\n  print('Bad email: ${FieldValidator.email(\"invalid\")}');\n  print('Good email: ${FieldValidator.email(\"a@b.com\")}');\n  print('Short: ${FieldValidator.minLength(\"hi\", 3)}');\n  print('Long enough: ${FieldValidator.minLength(\"hello\", 3)}');\n  print('Too long: ${FieldValidator.maxLength(\"toolong\", 5)}');\n}",
+      "hints": [
+        "required: dùng value.trim().isEmpty để kiểm tra whitespace",
+        "email: kiểm tra chứa '@' và '.' sau '@'",
+        "minLength/maxLength: so sánh value.length với ngưỡng"
+      ],
+      "expectedConcepts": ["validation", "static_method", "null_return", "trim"],
+      "commonMistakes": [
+        {
+          "id": "missing_trim",
+          "pattern": "if (value.isEmpty)",
+          "explanation": "Không trim whitespace, chấp nhận chuỗi chỉ có spaces",
+          "hint": "Dùng value.trim().isEmpty thay vì value.isEmpty"
+        }
+      ]
+    },
+    {
+      "id": "flutter-form-002",
+      "lessonId": "flutter-forms",
+      "title": "Form State Manager",
+      "conceptTags": ["form", "state", "dirty", "validate", "submit"],
+      "difficulty": "intermediate",
+      "instructions": "Tạo class `FormState` mô phỏng form management:\n\n- Constructor `FormState(Map<String, String> initialValues)`\n- Method `getValue(String field)` trả về giá trị hiện tại\n- Method `setValue(String field, String value)` cập nhật giá trị, đánh dấu form dirty\n- Method `isDirty()` trả về true nếu có field nào bị thay đổi\n- Method `validate(Map<String, String? Function(String)> validators)` chạy validators, trả về `Map<String, String>` các lỗi (empty nếu hợp lệ)\n- Method `submit()` trả về Map giá trị nếu valid, hoặc null nếu có lỗi\n\nVí dụ:\n```\nfinal form = FormState({'name': '', 'email': ''});\nform.setValue('name', 'Alice');\nform.isDirty() → true\nform.validate({'name': FieldValidator.required, 'email': FieldValidator.email})\n  → {name: null, email: 'Email không hợp lệ'}\n```",
+      "starterCode": "class FormState {\n  final Map<String, String> _values = {};\n  final Map<String, String> _initialValues = {};\n  bool _dirty = false;\n\n  FormState(Map<String, String> initialValues) {\n    _values.addAll(initialValues);\n    _initialValues.addAll(initialValues);\n  }\n\n  // TODO: Implement getValue\n  String getValue(String field) {\n    return '';\n  }\n\n  // TODO: Implement setValue\n  void setValue(String field, String value) {}\n\n  // TODO: Implement isDirty\n  bool isDirty() {\n    return false;\n  }\n\n  // TODO: Implement validate\n  Map<String, String?> validate(Map<String, String? Function(String)> validators) {\n    return {};\n  }\n\n  // TODO: Implement submit\n  Map<String, String>? submit() {\n    return null;\n  }\n}\n\nvoid main() {\n  final form = FormState({'name': '', 'email': ''});\n  form.setValue('name', 'Alice');\n  form.setValue('email', 'invalid');\n\n  print('Dirty: ${form.isDirty()}');\n  print('Name: ${form.getValue('name')}');\n\n  final errors = form.validate({\n    'name': (v) => v.isEmpty ? 'Required' : null,\n    'email': (v) => v.contains('@') ? null : 'Invalid email',\n  });\n  print('Errors: $errors');\n  print('Submit: ${form.submit()}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('getValue returns current value', () {\n    final form = FormState({'name': 'Alice'});\n    expect(form.getValue('name'), equals('Alice'));\n  });\n\n  test('setValue updates value and marks dirty', () {\n    final form = FormState({'name': ''});\n    form.setValue('name', 'Alice');\n    expect(form.getValue('name'), equals('Alice'));\n    expect(form.isDirty(), isTrue);\n  });\n\n  test('isDirty false when no changes', () {\n    final form = FormState({'name': 'Alice'});\n    expect(form.isDirty(), isFalse);\n  });\n\n  test('validate returns errors', () {\n    final form = FormState({'name': ''});\n    final errors = form.validate({'name': (v) => v.isEmpty ? 'Required' : null});\n    expect(errors['name'], equals('Required'));\n  });\n\n  test('validate returns empty for valid', () {\n    final form = FormState({'name': 'Alice'});\n    final errors = form.validate({'name': (v) => v.isEmpty ? 'Required' : null});\n    expect(errors, isEmpty);\n  });\n\n  test('submit returns values when valid', () {\n    final form = FormState({'name': 'Alice'});\n    final result = form.submit();\n    expect(result, equals({'name': 'Alice'}));\n  });\n\n  test('submit returns null when dirty', () {\n    final form = FormState({'name': ''});\n    form.setValue('name', '');\n    expect(form.submit(), isNull);\n  });\n}",
+      "solutionCode": "class FormState {\n  final Map<String, String> _values = {};\n  final Map<String, String> _initialValues = {};\n  bool _dirty = false;\n\n  FormState(Map<String, String> initialValues) {\n    _values.addAll(initialValues);\n    _initialValues.addAll(initialValues);\n  }\n\n  String getValue(String field) {\n    return _values[field] ?? '';\n  }\n\n  void setValue(String field, String value) {\n    _values[field] = value;\n    if (_initialValues[field] != value) {\n      _dirty = true;\n    }\n  }\n\n  bool isDirty() {\n    return _dirty;\n  }\n\n  Map<String, String?> validate(Map<String, String? Function(String)> validators) {\n    final errors = <String, String?>{};\n    for (final entry in validators.entries) {\n      final value = _values[entry.key] ?? '';\n      errors[entry.key] = entry.value(value);\n    }\n    return errors;\n  }\n\n  Map<String, String>? submit() {\n    if (_dirty) return null;\n    return Map.from(_values);\n  }\n}\n\nvoid main() {\n  final form = FormState({'name': '', 'email': ''});\n  form.setValue('name', 'Alice');\n  form.setValue('email', 'invalid');\n\n  print('Dirty: ${form.isDirty()}');\n  print('Name: ${form.getValue('name')}');\n\n  final errors = form.validate({\n    'name': (v) => v.isEmpty ? 'Required' : null,\n    'email': (v) => v.contains('@') ? null : 'Invalid email',\n  });\n  print('Errors: $errors');\n  print('Submit: ${form.submit()}');\n}",
+      "hints": [
+        "getValue: return _values[field] ?? '' để tránh null",
+        "setValue: so sánh value mới với initial value để set _dirty",
+        "validate: duyệt qua validators.entries, gọi function với giá trị hiện tại",
+        "submit: trả về null nếu dirty, trả về copy values nếu clean"
+      ],
+      "expectedConcepts": ["form_state", "dirty_tracking", "validation", "null_coalesce"],
+      "commonMistakes": [
+        {
+          "id": "always_dirty",
+          "pattern": "_dirty = true;",
+          "explanation": "Đánh dấu dirty kể cả khi set giá trị giống initial",
+          "hint": "So sánh _initialValues[field] != value trước khi set _dirty"
+        }
+      ]
+    },
+    {
+      "id": "flutter-form-003",
+      "lessonId": "flutter-forms",
+      "title": "Multi-Step Form Wizard",
+      "conceptTags": ["wizard", "step", "multi_form", "navigation"],
+      "difficulty": "advanced",
+      "instructions": "Tạo class `FormWizard` mô phỏng multi-step form:\n\n- Constructor `FormWizard(List<String> stepNames)`\n- Method `currentStep()` trả về tên step hiện tại\n- Method `next()` chuyển sang step tiếp theo, trả về `true` nếu thành công, `false` nếu đã ở step cuối\n- Method `previous()` quay lại step trước, trả về `true` nếu thành công\n- Method `isFirst()` trả về true nếu đang ở step đầu\n- Method `isLast()` trả về true nếu đang ở step cuối\n- Method `getStepData(String step)` trả về Map data của step\n- Method `setStepData(String step, Map<String, dynamic> data)` lưu data cho step\n- Method `summary()` trả về String tóm tắt: \"Wizard({total_steps} steps): [{step1}: {fields} fields, ...]\"\n\nVí dụ:\n```\nfinal wizard = FormWizard(['Personal', 'Address', 'Review']);\nwizard.currentStep() → 'Personal'\nwizard.setStepData('Personal', {'name': 'Alice', 'age': '25'});\nwizard.next() → true\nwizard.currentStep() → 'Address'\nwizard.summary() → \"Wizard(3 steps): [Personal: 2 fields, Address: 0 fields, Review: 0 fields]\"\n```",
+      "starterCode": "class FormWizard {\n  final List<String> _steps;\n  int _currentIndex = 0;\n  final Map<String, Map<String, dynamic>> _data = {};\n\n  FormWizard(this._steps) {\n    for (final step in _steps) {\n      _data[step] = {};\n    }\n  }\n\n  // TODO: Implement currentStep\n  String currentStep() {\n    return '';\n  }\n\n  // TODO: Implement next\n  bool next() {\n    return false;\n  }\n\n  // TODO: Implement previous\n  bool previous() {\n    return false;\n  }\n\n  // TODO: Implement isFirst\n  bool isFirst() {\n    return false;\n  }\n\n  // TODO: Implement isLast\n  bool isLast() {\n    return false;\n  }\n\n  // TODO: Implement getStepData\n  Map<String, dynamic> getStepData(String step) {\n    return {};\n  }\n\n  // TODO: Implement setStepData\n  void setStepData(String step, Map<String, dynamic> data) {}\n\n  // TODO: Implement summary\n  String summary() {\n    return '';\n  }\n}\n\nvoid main() {\n  final wizard = FormWizard(['Personal', 'Address', 'Review']);\n  print('Current: ${wizard.currentStep()}');\n\n  wizard.setStepData('Personal', {'name': 'Alice', 'age': '25'});\n  wizard.next();\n  print('Current: ${wizard.currentStep()}');\n\n  wizard.setStepData('Address', {'street': '123 Main St'});\n  wizard.next();\n  print('Current: ${wizard.currentStep()}');\n  print('Is last: ${wizard.isLast()}');\n  print(wizard.summary());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('currentStep returns first step', () {\n    final wizard = FormWizard(['A', 'B', 'C']);\n    expect(wizard.currentStep(), equals('A'));\n  });\n\n  test('next advances to next step', () {\n    final wizard = FormWizard(['A', 'B', 'C']);\n    expect(wizard.next(), isTrue);\n    expect(wizard.currentStep(), equals('B'));\n  });\n\n  test('next returns false at last step', () {\n    final wizard = FormWizard(['A', 'B']);\n    wizard.next();\n    expect(wizard.next(), isFalse);\n    expect(wizard.currentStep(), equals('B'));\n  });\n\n  test('previous goes back', () {\n    final wizard = FormWizard(['A', 'B', 'C']);\n    wizard.next();\n    expect(wizard.previous(), isTrue);\n    expect(wizard.currentStep(), equals('A'));\n  });\n\n  test('previous returns false at first step', () {\n    final wizard = FormWizard(['A', 'B']);\n    expect(wizard.previous(), isFalse);\n  });\n\n  test('isFirst and isLast', () {\n    final wizard = FormWizard(['A', 'B', 'C']);\n    expect(wizard.isFirst(), isTrue);\n    expect(wizard.isLast(), isFalse);\n    wizard.next();\n    wizard.next();\n    expect(wizard.isLast(), isTrue);\n  });\n\n  test('set and get step data', () {\n    final wizard = FormWizard(['A', 'B']);\n    wizard.setStepData('A', {'x': 1});\n    expect(wizard.getStepData('A'), equals({'x': 1}));\n  });\n\n  test('summary shows field counts', () {\n    final wizard = FormWizard(['A', 'B']);\n    wizard.setStepData('A', {'x': 1, 'y': 2});\n    expect(wizard.summary(), equals('Wizard(2 steps): [A: 2 fields, B: 0 fields]'));\n  });\n}",
+      "solutionCode": "class FormWizard {\n  final List<String> _steps;\n  int _currentIndex = 0;\n  final Map<String, Map<String, dynamic>> _data = {};\n\n  FormWizard(this._steps) {\n    for (final step in _steps) {\n      _data[step] = {};\n    }\n  }\n\n  String currentStep() {\n    return _steps[_currentIndex];\n  }\n\n  bool next() {\n    if (_currentIndex >= _steps.length - 1) return false;\n    _currentIndex++;\n    return true;\n  }\n\n  bool previous() {\n    if (_currentIndex <= 0) return false;\n    _currentIndex--;\n    return true;\n  }\n\n  bool isFirst() {\n    return _currentIndex == 0;\n  }\n\n  bool isLast() {\n    return _currentIndex == _steps.length - 1;\n  }\n\n  Map<String, dynamic> getStepData(String step) {\n    return Map.from(_data[step] ?? {});\n  }\n\n  void setStepData(String step, Map<String, dynamic> data) {\n    if (_data.containsKey(step)) {\n      _data[step] = data;\n    }\n  }\n\n  String summary() {\n    final parts = _steps.map((s) {\n      final count = _data[s]?.length ?? 0;\n      return '$s: $count fields';\n    }).join(', ');\n    return 'Wizard(${_steps.length} steps): [$parts]';\n  }\n}\n\nvoid main() {\n  final wizard = FormWizard(['Personal', 'Address', 'Review']);\n  print('Current: ${wizard.currentStep()}');\n\n  wizard.setStepData('Personal', {'name': 'Alice', 'age': '25'});\n  wizard.next();\n  print('Current: ${wizard.currentStep()}');\n\n  wizard.setStepData('Address', {'street': '123 Main St'});\n  wizard.next();\n  print('Current: ${wizard.currentStep()}');\n  print('Is last: ${wizard.isLast()}');\n  print(wizard.summary());\n}",
+      "hints": [
+        "currentStep: return _steps[_currentIndex]",
+        "next: kiểm tra _currentIndex < _steps.length - 1 trước khi tăng",
+        "summary: dùng _steps.map() để tạo chuỗi mô tả mỗi step"
+      ],
+      "expectedConcepts": ["wizard_pattern", "index_management", "data_persistence", "map"],
+      "commonMistakes": [
+        {
+          "id": "index_out_of_bounds",
+          "pattern": "_currentIndex++",
+          "explanation": "Không kiểm tra bounds trước khi tăng index",
+          "hint": "Thêm if (_currentIndex >= _steps.length - 1) return false;"
+        }
+      ]
+    }
+  ]
+}

@@ -16,6 +16,7 @@
       "title": "Variables and Type Inference",
       "conceptTags": ["variables", "type_inference", "var"],
       "difficulty": "beginner",
+      "framework": "dart",
       "instructions": "Khai báo các biến sau sử dụng type inference (var):\n\n- `age` với giá trị 25\n- `height` với giá trị 1.75 (số thực)\n- `isStudent` với giá trị true\n\nSau đó viết function `describe()` trả về chuỗi mô tả: \"Age: {age}, Height: {height}m, Student: {isStudent}\"",
       "starterCode": "// TODO: Khai báo age, height, isStudent\n\nString describe() {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  print(describe());\n}",
       "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('variables are declared correctly', () {\n    expect(age, equals(25));\n    expect(height, equals(1.75));\n    expect(isStudent, equals(true));\n  });\n\n  test('describe returns correct format', () {\n    expect(describe(), equals('Age: 25, Height: 1.75m, Student: true'));\n  });\n}",
@@ -41,6 +42,7 @@
       "title": "Final Variables",
       "conceptTags": ["final", "immutability", "variables"],
       "difficulty": "beginner",
+      "framework": "dart",
       "instructions": "Khai báo các biến `final` sau:\n\n- `appName` với giá trị \"DartTutor\"\n- `version` với giá trị \"1.0.0\"\n- `releaseYear` với giá trị 2024\n\nViết function `getAppInfo()` trả về chuỗi: \"{appName} v{version} ({releaseYear})\"",
       "starterCode": "// TODO: Khai báo appName, version, releaseYear với final\n\nString getAppInfo() {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  print(getAppInfo());\n  // Thử uncomment dòng dưới để thấy lỗi compile:\n  // appName = 'NewName'; // Error: final variable không thể thay đổi\n}",
       "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('final variables are declared correctly', () {\n    expect(appName, equals('DartTutor'));\n    expect(version, equals('1.0.0'));\n    expect(releaseYear, equals(2024));\n  });\n\n  test('getAppInfo returns correct format', () {\n    expect(getAppInfo(), equals('DartTutor v1.0.0 (2024)'));\n  });\n}",
@@ -66,6 +68,7 @@
       "title": "Late Variables",
       "conceptTags": ["late", "variables", "initialization"],
       "difficulty": "beginner",
+      "framework": "dart",
       "instructions": "Khai báo biến `late String description;` ở top-level.\n\nViết function `initDescription(String value)` để gán giá trị cho `description`.\n\nViết function `getDescription()` trả về giá trị của `description`.\n\nLưu ý: late variables phải được khởi tạo trước khi sử dụng, nếu không sẽ báo lỗi runtime.",
       "starterCode": "// TODO: Khai báo late String description;\n\nvoid initDescription(String value) {\n  // TODO: Implement\n}\n\nString getDescription() {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  initDescription('This is a late variable example');\n  print(getDescription());\n}",
       "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('late variable works correctly', () {\n    initDescription('Test description');\n    expect(getDescription(), equals('Test description'));\n  });\n\n  test('late variable can be reassigned', () {\n    initDescription('First value');\n    expect(getDescription(), equals('First value'));\n    \n    initDescription('Second value');\n    expect(getDescription(), equals('Second value'));\n  });\n}",
@@ -98,6 +101,7 @@
       "title": "String Interpolation",
       "conceptTags": ["strings", "interpolation", "variables"],
       "difficulty": "beginner",
+      "framework": "dart",
       "instructions": "Tạo một function `greet(String name)` trả về chuỗi \"Hello, {name}!\" sử dụng string interpolation.\n\nVí dụ:\n- `greet('Alice')` → `\"Hello, Alice!\"`\n- `greet('Bob')` → `\"Hello, Bob!\"`",
       "starterCode": "String greet(String name) {\n  // TODO: Implement this function\n  return '';\n}\n\nvoid main() {\n  print(greet('World'));\n}",
       "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('greet returns correct greeting', () {\n    expect(greet('Alice'), equals('Hello, Alice!'));\n    expect(greet('Bob'), equals('Hello, Bob!'));\n    expect(greet('Dart'), equals('Hello, Dart!'));\n  });\n}",
@@ -122,6 +126,7 @@
       "title": "Final vs Const",
       "conceptTags": ["variables", "final", "const", "immutability"],
       "difficulty": "beginner",
+      "framework": "dart",
       "instructions": "Khai báo một biến `final` tên là `userName` với giá trị \"Alice\" và một biến `const` tên là `maxAttempts` với giá trị 3.\n\nSau đó viết function `canRetry(int attempts)` trả về `true` nếu `attempts < maxAttempts`.",
       "starterCode": "// TODO: Khai báo userName (final)\n// TODO: Khai báo maxAttempts (const)\n\nbool canRetry(int attempts) {\n  // TODO: Implement\n  return false;\n}\n\nvoid main() {\n  print('User: $userName');\n  print('Can retry: ${canRetry(2)}');\n}",
       "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('userName is defined', () {\n    expect(userName, equals('Alice'));\n  });\n\n  test('maxAttempts is 3', () {\n    expect(maxAttempts, equals(3));\n  });\n\n  test('canRetry works correctly', () {\n    expect(canRetry(0), isTrue);\n    expect(canRetry(2), isTrue);\n    expect(canRetry(3), isFalse);\n    expect(canRetry(5), isFalse);\n  });\n}",
@@ -147,6 +152,7 @@
       "title": "Greeting Function",
       "conceptTags": ["functions", "parameters", "string_interpolation", "conditionals"],
       "difficulty": "beginner",
+      "framework": "dart",
       "instructions": "Viết function `greetUser(String name, {String? title})` trả về lời chào.\n\n- Nếu `title` được cung cấp: \"Hello, {title} {name}!\"\n- Nếu không: \"Hello, {name}!\"\n\nVí dụ:\n- `greetUser('Alice')` → `\"Hello, Alice!\"`\n- `greetUser('Smith', title: 'Dr.')` → `\"Hello, Dr. Smith!\"`",
       "starterCode": "String greetUser(String name, {String? title}) {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  print(greetUser('Alice'));\n  print(greetUser('Smith', title: 'Dr.'));\n}",
       "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('greetUser without title', () {\n    expect(greetUser('Alice'), equals('Hello, Alice!'));\n    expect(greetUser('Bob'), equals('Hello, Bob!'));\n  });\n\n  test('greetUser with title', () {\n    expect(greetUser('Smith', title: 'Dr.'), equals('Hello, Dr. Smith!'));\n    expect(greetUser('Johnson', title: 'Prof.'), equals('Hello, Prof. Johnson!'));\n  });\n}",
@@ -172,4 +178,5 @@
       ]
     }
   ]
+
 }

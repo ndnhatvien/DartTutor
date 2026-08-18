@@ -1,0 +1,88 @@
+{
+  "id": "flutter-basics",
+  "title": "Flutter Basics",
+  "description": "Giới thiệu Flutter: Widget, StatelessWidget, StatefulWidget, runApp()",
+  "objectives": [
+    "Hiểu cấu trúc một Flutter app",
+    "Phân biệt StatelessWidget và StatefulWidget",
+    "Tạo và sử dụng các Widget cơ bản"
+  ],
+  "prerequisites": ["basics"],
+  "exercises": [
+    {
+      "id": "flutter-basics-001",
+      "lessonId": "flutter-basics",
+      "title": "My First Widget",
+      "conceptTags": ["widget", "stateless", "build"],
+      "difficulty": "beginner",
+      "instructions": "Tạo một StatelessWidget tên là `GreetingWidget` có property `String name`.\n\nTrong method `build`, trả về một describe chuỗi:\n\"Widget: GreetingWidget, Name: {name}\"\n\nVí dụ: `GreetingWidget('Alice')` → \"Widget: GreetingWidget, Name: Alice\"",
+      "starterCode": "class GreetingWidget {\n  final String name;\n\n  // TODO: Constructor với required name\n\n  // TODO: Implement describe()\n  String describe() {\n    return '';\n  }\n}\n\nvoid main() {\n  final widget = GreetingWidget('Alice');\n  print(widget.describe());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('GreetingWidget describe returns correct format', () {\n    final widget = GreetingWidget('Alice');\n    expect(widget.describe(), equals('Widget: GreetingWidget, Name: Alice'));\n  });\n\n  test('GreetingWidget with different name', () {\n    final widget = GreetingWidget('Bob');\n    expect(widget.describe(), equals('Widget: GreetingWidget, Name: Bob'));\n  });\n}",
+      "solutionCode": "class GreetingWidget {\n  final String name;\n\n  GreetingWidget(this.name);\n\n  String describe() {\n    return 'Widget: GreetingWidget, Name: $name';\n  }\n}\n\nvoid main() {\n  final widget = GreetingWidget('Alice');\n  print(widget.describe());\n}",
+      "hints": [
+        "Sử dụng constructor shortcut: GreetingWidget(this.name);",
+        "Sử dụng string interpolation $name để nhúng giá trị vào chuỗi",
+        "property name cần là final để immutable"
+      ],
+      "expectedConcepts": ["widget", "constructor", "string_interpolation"],
+      "commonMistakes": [
+        {
+          "id": "missing_constructor",
+          "pattern": "String name;",
+          "explanation": "Quên constructor, property name không được khởi tạo",
+          "hint": "Thêm constructor GreetingWidget(this.name);"
+        }
+      ]
+    },
+    {
+      "id": "flutter-basics-002",
+      "lessonId": "flutter-basics",
+      "title": "Counter Widget",
+      "conceptTags": ["stateful", "state", "increment"],
+      "difficulty": "beginner",
+      "instructions": "Tạo một class `Counter` mô phỏng StatefulWidget:\n\n- Property `int count` (private, giá trị ban đầu = 0)\n- Method `increment()` tăng count lên 1\n- Method `getCount()` trả về giá trị count hiện tại\n- Method `describe()` trả về \"Count: {count}\"",
+      "starterCode": "class Counter {\n  // TODO: Khai báo count private\n\n  // TODO: Implement increment()\n  void increment() {}\n\n  // TODO: Implement getCount()\n  int getCount() {\n    return 0;\n  }\n\n  // TODO: Implement describe()\n  String describe() {\n    return '';\n  }\n}\n\nvoid main() {\n  final counter = Counter();\n  print(counter.describe());\n  counter.increment();\n  counter.increment();\n  counter.increment();\n  print(counter.describe());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('counter starts at 0', () {\n    final counter = Counter();\n    expect(counter.getCount(), equals(0));\n  });\n\n  test('increment increases count', () {\n    final counter = Counter();\n    counter.increment();\n    counter.increment();\n    expect(counter.getCount(), equals(2));\n  });\n\n  test('describe shows current count', () {\n    final counter = Counter();\n    counter.increment();\n    expect(counter.describe(), equals('Count: 1'));\n  });\n}",
+      "solutionCode": "class Counter {\n  int _count = 0;\n\n  void increment() {\n    _count++;\n  }\n\n  int getCount() {\n    return _count;\n  }\n\n  String describe() {\n    return 'Count: $_count';\n  }\n}\n\nvoid main() {\n  final counter = Counter();\n  print(counter.describe());\n  counter.increment();\n  counter.increment();\n  counter.increment();\n  print(counter.describe());\n}",
+      "hints": [
+        "Sử dụng underscore (_) để tạo private field: int _count = 0;",
+        "_count++ tương đương _count = _count + 1",
+        "Getter method trả về giá trị hiện tại của _count"
+      ],
+      "expectedConcepts": ["private_field", "state", "increment", "getter"],
+      "commonMistakes": [
+        {
+          "id": "public_field",
+          "pattern": "int count = 0;",
+          "explanation": "Field phải private (dùng underscore) để mô phỏng encapsulation của StatefulWidget",
+          "hint": "Đổi thành int _count = 0;"
+        }
+      ]
+    },
+    {
+      "id": "flutter-basics-003",
+      "lessonId": "flutter-basics",
+      "title": "Widget Tree Builder",
+      "conceptTags": ["widget_tree", "children", "nested"],
+      "difficulty": "intermediate",
+      "instructions": "Tạo class `WidgetNode` mô phỏng widget tree:\n\n- Property `String type` (tên widget)\n- Property `List<WidgetNode> children` (default rỗng)\n- Method `addChild(WidgetNode child)` thêm child\n- Method `describe()` trả về chuỗi mô tả树: \"{type}({children_count})\"\n- Method `find(String type)` tìm node theo type, trả về `bool`\n\nVí dụ:\n```\nfinal root = WidgetNode('Scaffold');\nroot.addChild(WidgetNode('Column'));\nroot.describe() → \"Scaffold(1)\"\nroot.find('Column') → true\nroot.find('Row') → false\n```",
+      "starterCode": "class WidgetNode {\n  final String type;\n  final List<WidgetNode> children;\n\n  WidgetNode(this.type, {List<WidgetNode>? children})\n      : children = children ?? [];\n\n  // TODO: Implement addChild\n  void addChild(WidgetNode child) {}\n\n  // TODO: Implement describe\n  String describe() {\n    return '';\n  }\n\n  // TODO: Implement find (tìm trong children và nested children)\n  bool find(String type) {\n    return false;\n  }\n}\n\nvoid main() {\n  final root = WidgetNode('Scaffold');\n  final column = WidgetNode('Column');\n  column.addChild(WidgetNode('Text'));\n  column.addChild(WidgetNode('Button'));\n  root.addChild(column);\n  root.addChild(WidgetNode('AppBar'));\n\n  print(root.describe());\n  print('Has Column: ${root.find('Column')}');\n  print('Has Text: ${root.find('Text')}');\n  print('Has Row: ${root.find('Row')}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('describe shows children count', () {\n    final root = WidgetNode('Scaffold');\n    expect(root.describe(), equals('Scaffold(0)'));\n  });\n\n  test('addChild increases count', () {\n    final root = WidgetNode('Scaffold');\n    root.addChild(WidgetNode('Column'));\n    expect(root.describe(), equals('Scaffold(1)'));\n  });\n\n  test('find finds direct child', () {\n    final root = WidgetNode('Scaffold');\n    root.addChild(WidgetNode('Column'));\n    expect(root.find('Column'), isTrue);\n  });\n\n  test('find finds nested child', () {\n    final root = WidgetNode('Scaffold');\n    final column = WidgetNode('Column');\n    column.addChild(WidgetNode('Text'));\n    root.addChild(column);\n    expect(root.find('Text'), isTrue);\n  });\n\n  test('find returns false for missing type', () {\n    final root = WidgetNode('Scaffold');\n    expect(root.find('Row'), isFalse);\n  });\n}",
+      "solutionCode": "class WidgetNode {\n  final String type;\n  final List<WidgetNode> children;\n\n  WidgetNode(this.type, {List<WidgetNode>? children})\n      : children = children ?? [];\n\n  void addChild(WidgetNode child) {\n    children.add(child);\n  }\n\n  String describe() {\n    return '$type(${children.length})';\n  }\n\n  bool find(String type) {\n    for (final child in children) {\n      if (child.type == type || child.find(type)) {\n        return true;\n      }\n    }\n    return false;\n  }\n}\n\nvoid main() {\n  final root = WidgetNode('Scaffold');\n  final column = WidgetNode('Column');\n  column.addChild(WidgetNode('Text'));\n  column.addChild(WidgetNode('Button'));\n  root.addChild(column);\n  root.addChild(WidgetNode('AppBar'));\n\n  print(root.describe());\n  print('Has Column: ${root.find('Column')}');\n  print('Has Text: ${root.find('Text')}');\n  print('Has Row: ${root.find('Row')}');\n}",
+      "hints": [
+        "addChild đơn giản là children.add(child)",
+        "describe dùng string interpolation: '$type(${children.length})'",
+        "find cần đệ quy: kiểm tra từng child, nếu child không match thì gọi child.find(type)"
+      ],
+      "expectedConcepts": ["widget_tree", "recursion", "list", "default_parameters"],
+      "commonMistakes": [
+        {
+          "id": "no_recursion",
+          "pattern": "for (final child in children)",
+          "explanation": "Chỉ tìm trong children trực tiếp, không đệ quy tìm trong nested children",
+          "hint": "Trong vòng lặp, gọi child.find(type) để tìm đệ quy"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "flutter-layouts",
+  "title": "Flutter Layouts",
+  "description": "Học cách bố cục trong Flutter: Row, Column, Container,.padding, Expanded",
+  "objectives": [
+    "Hiểu Flex layout (Row/Column)",
+    "Sử dụng MainAxisAlignment và CrossAxisAlignment",
+    "Áp dụng padding, margin, và sizing"
+  ],
+  "prerequisites": ["flutter-basics"],
+  "exercises": [
+    {
+      "id": "flutter-layouts-001",
+      "lessonId": "flutter-layouts",
+      "title": "Layout Calculator",
+      "conceptTags": ["row", "column", "main_axis", "cross_axis"],
+      "difficulty": "beginner",
+      "instructions": "Tạo class `LayoutInfo` mô phỏng layout calculation:\n\n- Property `String direction` (\"horizontal\" hoặc \"vertical\")\n- Property `List<int> sizes` (kích thước các items)\n- Method `totalSize()` trả về tổng kích thước\n- Method `averageSize()` trả về trung bình (làm tròn 1 chữ số thập phân)\n- Method `describe()` trả về \"Direction: {direction}, Items: {count}, Total: {total}\"\n\nVí dụ:\n```\nfinal layout = LayoutInfo('horizontal', [100, 200, 150]);\nlayout.totalSize() → 450\nlayout.describe() → \"Direction: horizontal, Items: 3, Total: 450\"\n```",
+      "starterCode": "class LayoutInfo {\n  final String direction;\n  final List<int> sizes;\n\n  LayoutInfo(this.direction, this.sizes);\n\n  // TODO: Implement totalSize()\n  int totalSize() {\n    return 0;\n  }\n\n  // TODO: Implement averageSize()\n  double averageSize() {\n    return 0;\n  }\n\n  // TODO: Implement describe()\n  String describe() {\n    return '';\n  }\n}\n\nvoid main() {\n  final layout = LayoutInfo('horizontal', [100, 200, 150]);\n  print('Total: ${layout.totalSize()}');\n  print('Average: ${layout.averageSize()}');\n  print(layout.describe());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('totalSize sums all sizes', () {\n    final layout = LayoutInfo('horizontal', [100, 200, 150]);\n    expect(layout.totalSize(), equals(450));\n  });\n\n  test('averageSize calculates correctly', () {\n    final layout = LayoutInfo('vertical', [100, 200, 150]);\n    expect(layout.averageSize(), equals(150.0));\n  });\n\n  test('describe returns correct format', () {\n    final layout = LayoutInfo('horizontal', [100, 200, 150]);\n    expect(layout.describe(), equals('Direction: horizontal, Items: 3, Total: 450'));\n  });\n\n  test('empty sizes', () {\n    final layout = LayoutInfo('vertical', []);\n    expect(layout.totalSize(), equals(0));\n  });\n}",
+      "solutionCode": "class LayoutInfo {\n  final String direction;\n  final List<int> sizes;\n\n  LayoutInfo(this.direction, this.sizes);\n\n  int totalSize() {\n    return sizes.fold(0, (sum, size) => sum + size);\n  }\n\n  double averageSize() {\n    if (sizes.isEmpty) return 0;\n    return totalSize() / sizes.length;\n  }\n\n  String describe() {\n    return 'Direction: $direction, Items: ${sizes.length}, Total: ${totalSize()}';\n  }\n}\n\nvoid main() {\n  final layout = LayoutInfo('horizontal', [100, 200, 150]);\n  print('Total: ${layout.totalSize()}');\n  print('Average: ${layout.averageSize()}');\n  print(layout.describe());\n}",
+      "hints": [
+        "Sử dụng fold để tổng hợp list: sizes.fold(0, (sum, size) => sum + size)",
+        "Kiểm tra sizes.isEmpty trước khi chia để tránh lỗi chia cho 0",
+        "sizes.length cho biết số lượng items"
+      ],
+      "expectedConcepts": ["fold", "list_operation", "null_safety"],
+      "commonMistakes": [
+        {
+          "id": "divide_by_zero",
+          "pattern": "return totalSize() / sizes.length;",
+          "explanation": "Không kiểm tra rỗng, sẽ lỗi chia cho 0 khi sizes rỗng",
+          "hint": "Thêm if (sizes.isEmpty) return 0; trước khi chia"
+        }
+      ]
+    },
+    {
+      "id": "flutter-layouts-002",
+      "lessonId": "flutter-layouts",
+      "title": "Flex Box Calculator",
+      "conceptTags": ["expanded", "flex", "ratio", "proportion"],
+      "difficulty": "intermediate",
+      "instructions": "Tạo class `FlexBox` mô phỏng Row/Column với Expanded widgets:\n\n- Constructor `FlexBox(int availableSpace, List<int> flexValues)`\n- Method `calculateSizes()` trả về `List<int>` — kích thước thực tế cho mỗi item theo tỷ lệ flex\n- Method `describe()` trả về chuỗi: \"Space: {total}, Flex: [{sizes}]\n\nTính toán: mỗi item nhận = (flexValue / totalFlex) * availableSpace, làm tròn xuống.\nPhần dư (space remainder) được cộng vào item cuối cùng.\n\nVí dụ:\n```\nfinal box = FlexBox(300, [1, 2, 1]);\nbox.calculateSizes() → [75, 150, 75]  // (1/4)*300, (2/4)*300, (1/4)*300\n```",
+      "starterCode": "class FlexBox {\n  final int availableSpace;\n  final List<int> flexValues;\n\n  FlexBox(this.availableSpace, this.flexValues);\n\n  int get _totalFlex => flexValues.fold(0, (sum, f) => sum + f);\n\n  // TODO: Implement calculateSizes()\n  List<int> calculateSizes() {\n    return [];\n  }\n\n  // TODO: Implement describe()\n  String describe() {\n    return '';\n  }\n}\n\nvoid main() {\n  final box = FlexBox(300, [1, 2, 1]);\n  print('Sizes: ${box.calculateSizes()}');\n  print(box.describe());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('equal flex distributes evenly', () {\n    final box = FlexBox(300, [1, 1, 1]);\n    expect(box.calculateSizes(), equals([100, 100, 100]));\n  });\n\n  test('unequal flex distributes proportionally', () {\n    final box = FlexBox(300, [1, 2, 1]);\n    expect(box.calculateSizes(), equals([75, 150, 75]));\n  });\n\n  test('remainder goes to last item', () {\n    final box = FlexBox(100, [1, 3]);\n    expect(box.calculateSizes(), equals([25, 75]));\n  });\n\n  test('describe returns correct format', () {\n    final box = FlexBox(300, [1, 2, 1]);\n    expect(box.describe(), equals('Space: 300, Flex: [75, 150, 75]'));\n  });\n}",
+      "solutionCode": "class FlexBox {\n  final int availableSpace;\n  final List<int> flexValues;\n\n  FlexBox(this.availableSpace, this.flexValues);\n\n  int get _totalFlex => flexValues.fold(0, (sum, f) => sum + f);\n\n  List<int> calculateSizes() {\n    if (flexValues.isEmpty || _totalFlex == 0) return [];\n\n    final sizes = flexValues.map((f) => (f * availableSpace / _totalFlex).floor()).toList();\n    final allocated = sizes.fold(0, (sum, s) => sum + s);\n    final remainder = availableSpace - allocated;\n\n    if (sizes.isNotEmpty) {\n      sizes[sizes.length - 1] += remainder;\n    }\n\n    return sizes;\n  }\n\n  String describe() {\n    return 'Space: $availableSpace, Flex: ${calculateSizes()}';\n  }\n}\n\nvoid main() {\n  final box = FlexBox(300, [1, 2, 1]);\n  print('Sizes: ${box.calculateSizes()}');\n  print(box.describe());\n}",
+      "hints": [
+        "Mỗi item size = (flex / totalFlex) * availableSpace, dùng .floor() để làm tròn",
+        "Tính tổng allocated rồi remainder = availableSpace - allocated",
+        "Cộng remainder vào item cuối: sizes.last += remainder"
+      ],
+      "expectedConcepts": ["flex", "proportion", "floor", "remainder"],
+      "commonMistakes": [
+        {
+          "id": "integer_overflow",
+          "pattern": "(f * availableSpace / _totalFlex).toInt()",
+          "explanation": "Dùng toInt() thay vì floor() có thể cho kết quả sai khi số âm",
+          "hint": "Sử dụng .floor() để luôn làm tròn xuống"
+        }
+      ]
+    },
+    {
+      "id": "flutter-layouts-003",
+      "lessonId": "flutter-layouts",
+      "title": "Responsive Grid",
+      "conceptTags": ["grid", "responsive", "breakpoint", "columns"],
+      "difficulty": "intermediate",
+      "instructions": "Tạo class `ResponsiveGrid` mô phỏng responsive grid layout:\n\n- Constructor `ResponsiveGrid(double screenWidth)`\n- Method `getColumns()` trả về số columns dựa trên width:\n  - < 600: 1 column\n  - 600-1024: 2 columns\n  - > 1024: 3 columns\n- Method `getColumnsBreakpoint()` trả về tên breakpoint: \"mobile\", \"tablet\", \"desktop\"\n- Method `calculateItemWidth(double padding)` trả về width mỗi item: (screenWidth - padding * (columns + 1)) / columns\n- Method `describe()` trả về \"Breakpoint: {name}, Columns: {n}, ItemWidth: {w}\"",
+      "starterCode": "class ResponsiveGrid {\n  final double screenWidth;\n\n  ResponsiveGrid(this.screenWidth);\n\n  // TODO: Implement getColumns()\n  int getColumns() {\n    return 1;\n  }\n\n  // TODO: Implement getColumnsBreakpoint()\n  String getColumnsBreakpoint() {\n    return '';\n  }\n\n  // TODO: Implement calculateItemWidth(double padding)\n  double calculateItemWidth(double padding) {\n    return 0;\n  }\n\n  // TODO: Implement describe()\n  String describe() {\n    return '';\n  }\n}\n\nvoid main() {\n  final mobile = ResponsiveGrid(400);\n  final tablet = ResponsiveGrid(800);\n  final desktop = ResponsiveGrid(1400);\n\n  print(mobile.describe());\n  print(tablet.describe());\n  print(desktop.describe());\n\n  print('Mobile item width: ${mobile.calculateItemWidth(16)}');\n  print('Tablet item width: ${tablet.calculateItemWidth(16)}');\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('mobile breakpoint: 1 column', () {\n    final grid = ResponsiveGrid(400);\n    expect(grid.getColumns(), equals(1));\n    expect(grid.getColumnsBreakpoint(), equals('mobile'));\n  });\n\n  test('tablet breakpoint: 2 columns', () {\n    final grid = ResponsiveGrid(800);\n    expect(grid.getColumns(), equals(2));\n    expect(grid.getColumnsBreakpoint(), equals('tablet'));\n  });\n\n  test('desktop breakpoint: 3 columns', () {\n    final grid = ResponsiveGrid(1400);\n    expect(grid.getColumns(), equals(3));\n    expect(grid.getColumnsBreakpoint(), equals('desktop'));\n  });\n\n  test('calculateItemWidth with padding', () {\n    final grid = ResponsiveGrid(800);\n    final width = grid.calculateItemWidth(16);\n    expect(width, equals(384.0));\n  });\n\n  test('describe returns correct format', () {\n    final grid = ResponsiveGrid(1400);\n    expect(grid.describe(), equals('Breakpoint: desktop, Columns: 3, ItemWidth: 456.0'));\n  });\n}",
+      "solutionCode": "class ResponsiveGrid {\n  final double screenWidth;\n\n  ResponsiveGrid(this.screenWidth);\n\n  int getColumns() {\n    if (screenWidth < 600) return 1;\n    if (screenWidth <= 1024) return 2;\n    return 3;\n  }\n\n  String getColumnsBreakpoint() {\n    if (screenWidth < 600) return 'mobile';\n    if (screenWidth <= 1024) return 'tablet';\n    return 'desktop';\n  }\n\n  double calculateItemWidth(double padding) {\n    final columns = getColumns();\n    return (screenWidth - padding * (columns + 1)) / columns;\n  }\n\n  String describe() {\n    final columns = getColumns();\n    final width = calculateItemWidth(0);\n    return 'Breakpoint: ${getColumnsBreakpoint()}, Columns: $columns, ItemWidth: $width';\n  }\n}\n\nvoid main() {\n  final mobile = ResponsiveGrid(400);\n  final tablet = ResponsiveGrid(800);\n  final desktop = ResponsiveGrid(1400);\n\n  print(mobile.describe());\n  print(tablet.describe());\n  print(desktop.describe());\n\n  print('Mobile item width: ${mobile.calculateItemWidth(16)}');\n  print('Tablet item width: ${tablet.calculateItemWidth(16)}');\n}",
+      "hints": [
+        "Sử dụng if-else if-else để phân biệt các breakpoint",
+        "Width formula: (screenWidth - padding * (columns + 1)) / columns",
+        "Gọi getColumns() lại trong calculateItemWidth để lấy số columns hiện tại"
+      ],
+      "expectedConcepts": ["breakpoint", "responsive", "conditional", "arithmetic"],
+      "commonMistakes": [
+        {
+          "id": "wrong_padding_formula",
+          "pattern": "screenWidth / columns - padding",
+          "explanation": "Công thức sai, padding cần nhân với (columns + 1) cho cả 2 bên",
+          "hint": "Công thức đúng: (screenWidth - padding * (columns + 1)) / columns"
+        }
+      ]
+    }
+  ]
+}
