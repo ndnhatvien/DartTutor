@@ -1,26 +1,37 @@
-# Dart Tutor
+# Dart & Flutter Tutor 🎯
 
-Browser-based interactive Dart learning platform với objective testing, deterministic tutoring, và optional AI enhancement.
+Nền tảng học Dart và Flutter tương tác ngay trên trình duyệt với bài tập thực hành, chấm điểm tự động và tutor AI tùy chọn.
 
-## Status
+## 🌐 Live Demo
 
-✅ **Phase 0 Complete** — Project setup  
-⏭️ **Phase 1** — UI Shell (next)
+**https://ndnhatvien.github.io/DartTutor/**
 
-## Quick Start
+## ✨ Tính năng
+
+- **15 bài học** với **70 bài tập** (30 Dart + 40 Flutter), phân loại theo độ khó
+  - Cơ bản → Trung bình → Nâng cao
+- **Chấm điểm tự động** (objective testing) — không phụ thuộc AI
+- **DartPad sandbox** — chạy code Dart/Flutter thực tế trong trình duyệt
+- **Tutor AI tùy chọn** (LLM, validate bằng Zod, tự động fallback khi lỗi)
+- **Theo dõi tiến độ** — lưu trạng thái từng bài tập, phần trăm hoàn thành
+- **Gợi ý từng bước** và xem solution khi cần
+
+## 🚀 Bắt đầu
+
+### Chạy local
 
 ```bash
-# Install dependencies
+# Cài dependencies
 pnpm install
 
-# Development
+# Dev server (http://localhost:3000)
 pnpm dev
 
-# Build
+# Build production
 pnpm build
 
-# Test
-pnpm test
+# Chạy test (vitest run)
+pnpm --filter dart-tutor test run
 
 # Type check
 pnpm type-check
@@ -29,57 +40,108 @@ pnpm type-check
 pnpm lint
 ```
 
-## Architecture
+### Deploy lên GitHub Pages
+
+Repository đã có workflow `deploy.yml` tự động deploy khi push lên `main`. Để bật lần đầu:
+
+1. Vào **Settings → Pages**
+2. Mục **Build and deployment → Source**, chọn **GitHub Actions**
+3. Push lên `main` — workflow sẽ build và deploy tự động
+
+Có thể deploy thủ công bằng cách vào **Actions → Deploy to GitHub Pages → Run workflow**.
+
+## 📚 Bài học
+
+### 🎯 Dart (5 bài học, 30 bài tập)
+
+| Bài học | Bài tập |
+|---------|---------|
+| Dart Basics | 6 |
+| Control Flow | 7 |
+| Functions + Null Safety | 7 |
+| Collections | 5 |
+| Async/Await | 5 |
+
+### 💙 Flutter (10 bài học, 40 bài tập)
+
+| Bài học | Bài tập |
+|---------|---------|
+| Flutter Basics | 3 |
+| Flutter Layouts | 3 |
+| Flutter Common Widgets | 5 |
+| Flutter State Management | 3 |
+| Flutter Navigation | 3 |
+| Flutter Forms | 3 |
+| Flutter Animation | 5 |
+| Flutter Networking | 5 |
+| Flutter Local Storage | 5 |
+| Flutter Theming | 5 |
+
+## 🏗️ Kiến trúc
 
 ```
 Browser
  ├─ Tutor UI (React)
- │   ├─ Lesson viewer
+ │   ├─ Lesson viewer (Dart/Flutter panels)
  │   ├─ Exercise editor
  │   ├─ Progress panel
  │   └─ Tutor feedback
  └─ DartPad iframe (sandboxed Dart execution)
-          ↓
-    Objective evaluation
-          ↓
-    Tutor State Machine
-     ├─ Rule-based (deterministic)
-     └─ LLM-based (optional, Phase 4)
+         ↓
+   Objective evaluation
+         ↓
+   Tutor State Machine
+    ├─ Rule-based (deterministic)
+    └─ LLM-based (optional)
 ```
 
-## MVP Scope
+## ⚙️ CI/CD
 
-**5 lessons**, **15 exercises**, objective tests, hints, progress tracking.
+- **CI** (`ci.yml`): lint, type-check, build, test trên mỗi push/PR
+- **PR Title** (`pr-title.yml`): validate Conventional Commits
+- **Deploy** (`deploy.yml`): build + deploy GitHub Pages trên `main`
 
-1. Dart Basics (variables, functions, interpolation)
-2. Control Flow (if/else, loops, switch)
-3. Functions + Null Safety
-4. Collections (List, Set, Map)
-5. Async/Await
+## 🛠️ Tech Stack
 
-## Key Principles
-
-- ✅ Objective tests determine pass/fail (never LLM)
-- ✅ Deterministic tutor works without AI
-- ✅ Learner code runs in DartPad sandbox (browser-safe)
-- ✅ Real events only (no fabricated data)
-- ✅ AI optional, validated with Zod, falls back on error
-
-## Documentation
-
-- [`plan.md`](./plan.md) — Full implementation plan
-- [`AI_AGENT_PROMPT.md`](./AI_AGENT_PROMPT.md) — Development guide
-- [`apps/dart-tutor/IMPLEMENTATION_NOTES.md`](./apps/dart-tutor/IMPLEMENTATION_NOTES.md) — Technical notes
-
-## Tech Stack
-
-- **Frontend**: React 18 + Vite
-- **Language**: TypeScript (strict mode)
+- **Frontend**: React 18 + Vite 5 + TypeScript (strict)
 - **Validation**: Zod
-- **Testing**: Vitest
+- **Testing**: Vitest + jsdom
 - **Linter**: Biome
 - **Package Manager**: pnpm (workspace)
+- **CI**: GitHub Actions (Node 24)
+- **Sandbox**: DartPad embed
 
-## License
+## 📁 Cấu trúc
+
+```
+apps/dart-tutor/
+├── content/lessons/     # 15 file JSON bài học
+├── src/
+│   ├── content/         # Loader + types
+│   ├── evaluator/       # Đánh giá kết quả
+│   ├── learner/         # Quản lý trạng thái + tiến độ
+│   ├── tutor/           # Rule-based + AI tutor
+│   └── ui/              # React components
+├── tests/               # Vitest tests
+└── vite.config.ts
+```
+
+## 🔑 Nguyên tắc
+
+- ✅ Test khách quan quyết định pass/fail (không bao giờ dùng LLM)
+- ✅ Tutor deterministic hoạt động không cần AI
+- ✅ Code học viên chạy trong sandbox DartPad (an toàn trình duyệt)
+- ✅ Chỉ dùng sự kiện thực (không bịa dữ liệu)
+- ✅ AI tùy chọn, validate bằng Zod, tự fallback khi lỗi
+
+## 📄 Tài liệu
+
+- [`AI_AGENT_PROMPT.md`](./AI_AGENT_PROMPT.md) — Hướng dẫn phát triển
+- [`apps/dart-tutor/DARTPAD_INTEGRATION.md`](./apps/dart-tutor/DARTPAD_INTEGRATION.md) — Tích hợp DartPad
+- [`apps/dart-tutor/IMPLEMENTATION_NOTES.md`](./apps/dart-tutor/IMPLEMENTATION_NOTES.md) — Ghi chú kỹ thuật
+- [`apps/dart-tutor/TESTING.md`](./apps/dart-tutor/TESTING.md) — Kiểm thử
+- [`apps/dart-tutor/AI_TUTOR.md`](./apps/dart-tutor/AI_TUTOR.md) — AI Tutor
+
+## 📄 License
 
 MIT
