@@ -86,6 +86,58 @@
           "hint": "fold(0, (sum, value) => sum + value) trả về tổng của tất cả values"
         }
       ]
+    },
+    {
+      "id": "collections-004",
+      "lessonId": "collections",
+      "title": "Remove Duplicates with Set",
+      "conceptTags": ["set", "list", "duplicates"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `removeDuplicates(List<int> numbers)` trả về list không có phần tử trùng lặp.\n\nSử dụng Set để loại bỏ duplicates.\n\nVí dụ:\n- `removeDuplicates([1, 2, 2, 3, 3, 3])` → `[1, 2, 3]`\n- `removeDuplicates([5, 5, 5])` → `[5]`\n- `removeDuplicates([1, 2, 3])` → `[1, 2, 3]`",
+      "starterCode": "List<int> removeDuplicates(List<int> numbers) {\n  // TODO: Sử dụng Set để remove duplicates\n  return [];\n}\n\nvoid main() {\n  print(removeDuplicates([1, 2, 2, 3, 3, 3]));  // [1, 2, 3]\n  print(removeDuplicates([5, 5, 5]));           // [5]\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Remove duplicates', () {\n    expect(removeDuplicates([1, 2, 2, 3, 3, 3]), equals([1, 2, 3]));\n    expect(removeDuplicates([5, 5, 5]), equals([5]));\n  });\n\n  test('No duplicates', () {\n    expect(removeDuplicates([1, 2, 3]), equals([1, 2, 3]));\n  });\n\n  test('Empty list', () {\n    expect(removeDuplicates([]), equals([]));\n  });\n\n  test('Length is correct', () {\n    expect(removeDuplicates([1, 1, 2, 2, 3, 3]).length, equals(3));\n  });\n}",
+      "solutionCode": "List<int> removeDuplicates(List<int> numbers) {\n  return numbers.toSet().toList();\n}\n\nvoid main() {\n  print(removeDuplicates([1, 2, 2, 3, 3, 3]));\n  print(removeDuplicates([5, 5, 5]));\n}",
+      "hints": [
+        "Set tự động loại bỏ duplicates",
+        "Convert List → Set: numbers.toSet()",
+        "Convert Set → List: .toList()",
+        "Chain: numbers.toSet().toList()"
+      ],
+      "expectedConcepts": ["set", "list", "conversion"],
+      "commonMistakes": [
+        {
+          "id": "WRONG_RETURN_TYPE",
+          "pattern": "Set",
+          "explanation": "Đang return Set thay vì List",
+          "hint": "Nhớ convert Set về List bằng .toList()"
+        }
+      ]
+    },
+    {
+      "id": "collections-005",
+      "lessonId": "collections",
+      "title": "Group by Length",
+      "conceptTags": ["map", "grouping", "list"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `groupByLength(List<String> words)` trả về Map group words theo độ dài.\n\nKey là length, value là list các words có length đó.\n\nVí dụ:\n- `groupByLength(['a', 'bb', 'ccc', 'dd'])` → `{1: ['a'], 2: ['bb', 'dd'], 3: ['ccc']}`\n- `groupByLength([])` → `{}`",
+      "starterCode": "Map<int, List<String>> groupByLength(List<String> words) {\n  // TODO: Group words by their length\n  return {};\n}\n\nvoid main() {\n  print(groupByLength(['a', 'bb', 'ccc', 'dd']));\n  print(groupByLength([]));\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Group mixed lengths', () {\n    final result = groupByLength(['a', 'bb', 'ccc', 'dd']);\n    expect(result[1], equals(['a']));\n    expect(result[2], equals(['bb', 'dd']));\n    expect(result[3], equals(['ccc']));\n  });\n\n  test('Empty list', () {\n    expect(groupByLength([]), equals({}));\n  });\n\n  test('Same length', () {\n    final result = groupByLength(['aa', 'bb', 'cc']);\n    expect(result[2], equals(['aa', 'bb', 'cc']));\n    expect(result.length, equals(1));\n  });\n}",
+      "solutionCode": "Map<int, List<String>> groupByLength(List<String> words) {\n  final result = <int, List<String>>{};\n  \n  for (final word in words) {\n    final len = word.length;\n    if (!result.containsKey(len)) {\n      result[len] = [];\n    }\n    result[len]!.add(word);\n  }\n  \n  return result;\n}\n\nvoid main() {\n  print(groupByLength(['a', 'bb', 'ccc', 'dd']));\n  print(groupByLength([]));\n}",
+      "hints": [
+        "Tạo empty Map: final result = <int, List<String>>{};",
+        "Loop qua từng word",
+        "Check nếu key (word.length) chưa tồn tại: result[len] = []",
+        "Add word vào list: result[len]!.add(word)"
+      ],
+      "expectedConcepts": ["map", "grouping", "for_in_loop", "list"],
+      "commonMistakes": [
+        {
+          "id": "NULLABLE_ACCESS",
+          "pattern": "null",
+          "explanation": "Truy cập list mà chưa khởi tạo",
+          "hint": "Kiểm tra containsKey trước khi add: if (!result.containsKey(len)) result[len] = []"
+        }
+      ]
     }
   ]
 }

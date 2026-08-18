@@ -90,6 +90,107 @@
           "hint": "Dùng int.tryParse() để tránh exception khi string không hợp lệ"
         }
       ]
+    },
+    {
+      "id": "functions-null-004",
+      "lessonId": "functions-null-safety",
+      "title": "Default Parameter",
+      "conceptTags": ["functions", "default_parameters", "optional"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `greet(String name, [String greeting = 'Hello'])` trả về lời chào.\n\ngreeting là optional parameter với default value 'Hello'.\n\nVí dụ:\n- `greet('Alice')` → `'Hello, Alice!'`\n- `greet('Bob', 'Hi')` → `'Hi, Bob!'`\n- `greet('Charlie', 'Welcome')` → `'Welcome, Charlie!'`",
+      "starterCode": "String greet(String name, [String greeting = 'Hello']) {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  print(greet('Alice'));              // Hello, Alice!\n  print(greet('Bob', 'Hi'));          // Hi, Bob!\n  print(greet('Charlie', 'Welcome')); // Welcome, Charlie!\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Default greeting', () {\n    expect(greet('Alice'), equals('Hello, Alice!'));\n    expect(greet('Bob'), equals('Hello, Bob!'));\n  });\n\n  test('Custom greeting', () {\n    expect(greet('Alice', 'Hi'), equals('Hi, Alice!'));\n    expect(greet('Bob', 'Welcome'), equals('Welcome, Bob!'));\n  });\n}",
+      "solutionCode": "String greet(String name, [String greeting = 'Hello']) {\n  return '$greeting, $name!';\n}\n\nvoid main() {\n  print(greet('Alice'));\n  print(greet('Bob', 'Hi'));\n  print(greet('Charlie', 'Welcome'));\n}",
+      "hints": [
+        "Optional positional parameters dùng []: [Type param = defaultValue]",
+        "String interpolation: '$greeting, $name!'",
+        "greeting đã có default value 'Hello'"
+      ],
+      "expectedConcepts": ["optional_parameters", "default_values", "string_interpolation"],
+      "commonMistakes": [
+        {
+          "id": "WRONG_PARAMETER_SYNTAX",
+          "pattern": "syntax",
+          "explanation": "Cú pháp optional parameter sai",
+          "hint": "Sử dụng [String greeting = 'Hello'] cho optional parameter"
+        }
+      ]
+    },
+    {
+      "id": "functions-null-005",
+      "lessonId": "functions-null-safety",
+      "title": "Named Parameters",
+      "conceptTags": ["functions", "named_parameters", "required"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `createUser({required String name, int age = 0, String? email})` trả về string mô tả user.\n\nFormat: \"User: {name}, Age: {age}, Email: {email hoặc 'none'}\"\n\nVí dụ:\n- `createUser(name: 'Alice')` → `'User: Alice, Age: 0, Email: none'`\n- `createUser(name: 'Bob', age: 25)` → `'User: Bob, Age: 25, Email: none'`\n- `createUser(name: 'Carol', age: 30, email: 'c@ex.com')` → `'User: Carol, Age: 30, Email: c@ex.com'`",
+      "starterCode": "String createUser({required String name, int age = 0, String? email}) {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  print(createUser(name: 'Alice'));\n  print(createUser(name: 'Bob', age: 25));\n  print(createUser(name: 'Carol', age: 30, email: 'c@ex.com'));\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Only required parameter', () {\n    expect(createUser(name: 'Alice'), equals('User: Alice, Age: 0, Email: none'));\n  });\n\n  test('With age', () {\n    expect(createUser(name: 'Bob', age: 25), equals('User: Bob, Age: 25, Email: none'));\n  });\n\n  test('With all parameters', () {\n    expect(createUser(name: 'Carol', age: 30, email: 'c@ex.com'), \n           equals('User: Carol, Age: 30, Email: c@ex.com'));\n  });\n}",
+      "solutionCode": "String createUser({required String name, int age = 0, String? email}) {\n  final emailStr = email ?? 'none';\n  return 'User: $name, Age: $age, Email: $emailStr';\n}\n\nvoid main() {\n  print(createUser(name: 'Alice'));\n  print(createUser(name: 'Bob', age: 25));\n  print(createUser(name: 'Carol', age: 30, email: 'c@ex.com'));\n}",
+      "hints": [
+        "Named parameters dùng {}: {required String name, ...}",
+        "required đánh dấu parameter bắt buộc",
+        "Dùng ?? để handle null email: email ?? 'none'"
+      ],
+      "expectedConcepts": ["named_parameters", "required", "null_coalescing", "default_values"],
+      "commonMistakes": [
+        {
+          "id": "MISSING_REQUIRED",
+          "pattern": "required",
+          "explanation": "Thiếu từ khóa required cho parameter bắt buộc",
+          "hint": "Thêm required trước String name"
+        }
+      ]
+    },
+    {
+      "id": "functions-null-006",
+      "lessonId": "functions-null-safety",
+      "title": "Null Assertion",
+      "conceptTags": ["null_safety", "assertion", "bang_operator"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `getUpperCase(String? text)` trả về uppercase của text.\n\nNếu text là null, throw Exception('Text cannot be null').\n\nSử dụng null assertion (!) sau khi kiểm tra.\n\nVí dụ:\n- `getUpperCase('hello')` → `'HELLO'`\n- `getUpperCase(null)` → throws Exception",
+      "starterCode": "String getUpperCase(String? text) {\n  // TODO: Check null và throw exception nếu cần\n  // Sau đó dùng ! để assert non-null\n  return '';\n}\n\nvoid main() {\n  print(getUpperCase('hello'));  // HELLO\n  // print(getUpperCase(null));  // Throws exception\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Non-null strings', () {\n    expect(getUpperCase('hello'), equals('HELLO'));\n    expect(getUpperCase('dart'), equals('DART'));\n  });\n\n  test('Null throws exception', () {\n    expect(() => getUpperCase(null), throwsException);\n  });\n}",
+      "solutionCode": "String getUpperCase(String? text) {\n  if (text == null) {\n    throw Exception('Text cannot be null');\n  }\n  return text.toUpperCase();\n}\n\nvoid main() {\n  print(getUpperCase('hello'));\n}",
+      "hints": [
+        "Kiểm tra if (text == null) throw Exception(...)",
+        "Sau khi throw, Dart biết text không còn null",
+        "Có thể dùng text.toUpperCase() trực tiếp sau đó",
+        "Hoặc dùng text!.toUpperCase() nếu muốn assert"
+      ],
+      "expectedConcepts": ["null_check", "exception_handling", "null_assertion"],
+      "commonMistakes": [
+        {
+          "id": "NULLABLE_ACCESS",
+          "pattern": "can't be used",
+          "explanation": "Truy cập text mà chưa kiểm tra null",
+          "hint": "Kiểm tra và throw exception trước khi gọi toUpperCase()"
+        }
+      ]
+    },
+    {
+      "id": "functions-null-007",
+      "lessonId": "functions-null-safety",
+      "title": "Cascade Operator",
+      "conceptTags": ["cascade", "null_safety", "method_chaining"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `buildList()` tạo và populate một List<int> sử dụng cascade operator (..).\n\nThêm các số: 1, 2, 3 vào list và return list đó.\n\nVí dụ: `buildList()` → `[1, 2, 3]`",
+      "starterCode": "List<int> buildList() {\n  // TODO: Sử dụng cascade operator (..) để add items\n  return [];\n}\n\nvoid main() {\n  print(buildList());  // [1, 2, 3]\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('List contains correct values', () {\n    final result = buildList();\n    expect(result, equals([1, 2, 3]));\n  });\n\n  test('List length is 3', () {\n    expect(buildList().length, equals(3));\n  });\n}",
+      "solutionCode": "List<int> buildList() {\n  return <int>[]\n    ..add(1)\n    ..add(2)\n    ..add(3);\n}\n\nvoid main() {\n  print(buildList());\n}",
+      "hints": [
+        "Cascade operator (..) cho phép gọi nhiều method liên tiếp",
+        "Cú pháp: <int>[]..add(1)..add(2)..add(3)",
+        "Cascade trả về object gốc, không phải kết quả của method call"
+      ],
+      "expectedConcepts": ["cascade_operator", "method_chaining", "list"],
+      "commonMistakes": [
+        {
+          "id": "WRONG_OPERATOR",
+          "pattern": ".",
+          "explanation": "Đang dùng . thay vì ..",
+          "hint": "Sử dụng .. (cascade) thay vì . (dot) để chain methods"
+        }
+      ]
     }
   ]
 }

@@ -92,6 +92,108 @@
           "hint": "Sử dụng default case trong switch để throw Exception"
         }
       ]
+    },
+    {
+      "id": "control-flow-004",
+      "lessonId": "control-flow",
+      "title": "Leap Year Checker",
+      "conceptTags": ["if_else", "boolean_logic", "conditionals"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `isLeapYear(int year)` kiểm tra năm nhuận:\n\nQuy tắc:\n- Chia hết cho 400: là năm nhuận\n- Chia hết cho 100: KHÔNG là năm nhuận\n- Chia hết cho 4: là năm nhuận\n- Còn lại: KHÔNG là năm nhuận\n\nVí dụ:\n- `isLeapYear(2000)` → `true` (chia hết 400)\n- `isLeapYear(1900)` → `false` (chia hết 100 nhưng không chia hết 400)\n- `isLeapYear(2024)` → `true` (chia hết 4)",
+      "starterCode": "bool isLeapYear(int year) {\n  // TODO: Implement leap year logic\n  return false;\n}\n\nvoid main() {\n  print(isLeapYear(2000));  // true\n  print(isLeapYear(1900));  // false\n  print(isLeapYear(2024));  // true\n  print(isLeapYear(2023));  // false\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Divisible by 400', () {\n    expect(isLeapYear(2000), isTrue);\n    expect(isLeapYear(2400), isTrue);\n  });\n\n  test('Divisible by 100 but not 400', () {\n    expect(isLeapYear(1900), isFalse);\n    expect(isLeapYear(2100), isFalse);\n  });\n\n  test('Divisible by 4 but not 100', () {\n    expect(isLeapYear(2024), isTrue);\n    expect(isLeapYear(2020), isTrue);\n  });\n\n  test('Not divisible by 4', () {\n    expect(isLeapYear(2023), isFalse);\n    expect(isLeapYear(2019), isFalse);\n  });\n}",
+      "solutionCode": "bool isLeapYear(int year) {\n  if (year % 400 == 0) {\n    return true;\n  } else if (year % 100 == 0) {\n    return false;\n  } else if (year % 4 == 0) {\n    return true;\n  } else {\n    return false;\n  }\n}\n\nvoid main() {\n  print(isLeapYear(2000));\n  print(isLeapYear(1900));\n  print(isLeapYear(2024));\n  print(isLeapYear(2023));\n}",
+      "hints": [
+        "Kiểm tra theo thứ tự: 400 trước, sau đó 100, rồi 4",
+        "Sử dụng toán tử % (modulo) để kiểm tra chia hết",
+        "Thứ tự kiểm tra rất quan trọng!"
+      ],
+      "expectedConcepts": ["if_else", "modulo", "boolean_logic"],
+      "commonMistakes": [
+        {
+          "id": "WRONG_BOOLEAN_CONDITION",
+          "pattern": "Expected: true",
+          "explanation": "Thứ tự điều kiện sai - phải check 400 trước 100",
+          "hint": "Kiểm tra year % 400 == 0 đầu tiên"
+        }
+      ]
+    },
+    {
+      "id": "control-flow-005",
+      "lessonId": "control-flow",
+      "title": "Sum Range",
+      "conceptTags": ["loops", "for_loop", "accumulation"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `sumRange(int start, int end)` tính tổng các số từ start đến end (inclusive).\n\nVí dụ:\n- `sumRange(1, 5)` → `15` (1+2+3+4+5)\n- `sumRange(5, 5)` → `5`\n- `sumRange(10, 12)` → `33` (10+11+12)",
+      "starterCode": "int sumRange(int start, int end) {\n  // TODO: Implement\n  return 0;\n}\n\nvoid main() {\n  print(sumRange(1, 5));   // 15\n  print(sumRange(5, 5));   // 5\n  print(sumRange(10, 12)); // 33\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Range 1 to 5', () {\n    expect(sumRange(1, 5), equals(15));\n  });\n\n  test('Single number', () {\n    expect(sumRange(5, 5), equals(5));\n    expect(sumRange(10, 10), equals(10));\n  });\n\n  test('Other ranges', () {\n    expect(sumRange(10, 12), equals(33));\n    expect(sumRange(0, 3), equals(6));\n  });\n}",
+      "solutionCode": "int sumRange(int start, int end) {\n  int sum = 0;\n  for (int i = start; i <= end; i++) {\n    sum += i;\n  }\n  return sum;\n}\n\nvoid main() {\n  print(sumRange(1, 5));\n  print(sumRange(5, 5));\n  print(sumRange(10, 12));\n}",
+      "hints": [
+        "Khởi tạo biến sum = 0",
+        "Sử dụng for loop từ start đến end (inclusive)",
+        "Trong loop: sum += i",
+        "Return sum sau khi loop kết thúc"
+      ],
+      "expectedConcepts": ["for_loop", "accumulation", "variable"],
+      "commonMistakes": [
+        {
+          "id": "OFF_BY_ONE",
+          "pattern": "Expected: 15",
+          "explanation": "Loop range sai - phải include cả end",
+          "hint": "Sử dụng i <= end thay vì i < end"
+        }
+      ]
+    },
+    {
+      "id": "control-flow-006",
+      "lessonId": "control-flow",
+      "title": "Countdown with While",
+      "conceptTags": ["while_loop", "list", "decrement"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `countdown(int n)` tạo list đếm ngược từ n về 0.\n\nSử dụng while loop.\n\nVí dụ:\n- `countdown(5)` → `[5, 4, 3, 2, 1, 0]`\n- `countdown(3)` → `[3, 2, 1, 0]`\n- `countdown(0)` → `[0]`",
+      "starterCode": "List<int> countdown(int n) {\n  // TODO: Implement với while loop\n  return [];\n}\n\nvoid main() {\n  print(countdown(5));  // [5, 4, 3, 2, 1, 0]\n  print(countdown(3));  // [3, 2, 1, 0]\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Countdown from 5', () {\n    expect(countdown(5), equals([5, 4, 3, 2, 1, 0]));\n  });\n\n  test('Countdown from 3', () {\n    expect(countdown(3), equals([3, 2, 1, 0]));\n  });\n\n  test('Countdown from 0', () {\n    expect(countdown(0), equals([0]));\n  });\n\n  test('Length is correct', () {\n    expect(countdown(5).length, equals(6));\n    expect(countdown(10).length, equals(11));\n  });\n}",
+      "solutionCode": "List<int> countdown(int n) {\n  final result = <int>[];\n  int current = n;\n  \n  while (current >= 0) {\n    result.add(current);\n    current--;\n  }\n  \n  return result;\n}\n\nvoid main() {\n  print(countdown(5));\n  print(countdown(3));\n}",
+      "hints": [
+        "Tạo empty list: final result = <int>[];",
+        "Khởi tạo biến current = n",
+        "While loop: current >= 0",
+        "Trong loop: add current vào list, rồi giảm current--"
+      ],
+      "expectedConcepts": ["while_loop", "list", "decrement"],
+      "commonMistakes": [
+        {
+          "id": "INFINITE_LOOP",
+          "pattern": "timeout",
+          "explanation": "Quên giảm current, gây infinite loop",
+          "hint": "Nhớ current-- trong while loop"
+        }
+      ]
+    },
+    {
+      "id": "control-flow-007",
+      "lessonId": "control-flow",
+      "title": "Day of Week",
+      "conceptTags": ["switch", "pattern_matching", "multiple_cases"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `dayType(int dayNumber)` trả về loại ngày (1=Monday, 7=Sunday):\n\n- 1-5: \"Weekday\"\n- 6-7: \"Weekend\"\n- Ngoài 1-7: \"Invalid\"\n\nSử dụng switch statement.\n\nVí dụ:\n- `dayType(1)` → `\"Weekday\"`\n- `dayType(6)` → `\"Weekend\"`\n- `dayType(8)` → `\"Invalid\"`",
+      "starterCode": "String dayType(int dayNumber) {\n  // TODO: Implement với switch\n  return '';\n}\n\nvoid main() {\n  print(dayType(1));  // Weekday\n  print(dayType(6));  // Weekend\n  print(dayType(8));  // Invalid\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Weekdays (1-5)', () {\n    expect(dayType(1), equals('Weekday'));\n    expect(dayType(3), equals('Weekday'));\n    expect(dayType(5), equals('Weekday'));\n  });\n\n  test('Weekend (6-7)', () {\n    expect(dayType(6), equals('Weekend'));\n    expect(dayType(7), equals('Weekend'));\n  });\n\n  test('Invalid days', () {\n    expect(dayType(0), equals('Invalid'));\n    expect(dayType(8), equals('Invalid'));\n    expect(dayType(-1), equals('Invalid'));\n  });\n}",
+      "solutionCode": "String dayType(int dayNumber) {\n  switch (dayNumber) {\n    case 1:\n    case 2:\n    case 3:\n    case 4:\n    case 5:\n      return 'Weekday';\n    case 6:\n    case 7:\n      return 'Weekend';\n    default:\n      return 'Invalid';\n  }\n}\n\nvoid main() {\n  print(dayType(1));\n  print(dayType(6));\n  print(dayType(8));\n}",
+      "hints": [
+        "Sử dụng switch với nhiều case cho cùng một return value",
+        "case 1: case 2: ... case 5: return 'Weekday';",
+        "default case để handle invalid input"
+      ],
+      "expectedConcepts": ["switch_statement", "multiple_cases", "default_case"],
+      "commonMistakes": [
+        {
+          "id": "SWITCH_CASE_FALLTHROUGH",
+          "pattern": "break",
+          "explanation": "Dart switch cần return hoặc break trong mỗi case",
+          "hint": "Mỗi case group phải có return statement"
+        }
+      ]
     }
   ]
 }

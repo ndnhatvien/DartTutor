@@ -13,6 +13,88 @@
     {
       "id": "basics-001",
       "lessonId": "basics",
+      "title": "Variables and Type Inference",
+      "conceptTags": ["variables", "type_inference", "var"],
+      "difficulty": "beginner",
+      "instructions": "Khai báo các biến sau sử dụng type inference (var):\n\n- `age` với giá trị 25\n- `height` với giá trị 1.75 (số thực)\n- `isStudent` với giá trị true\n\nSau đó viết function `describe()` trả về chuỗi mô tả: \"Age: {age}, Height: {height}m, Student: {isStudent}\"",
+      "starterCode": "// TODO: Khai báo age, height, isStudent\n\nString describe() {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  print(describe());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('variables are declared correctly', () {\n    expect(age, equals(25));\n    expect(height, equals(1.75));\n    expect(isStudent, equals(true));\n  });\n\n  test('describe returns correct format', () {\n    expect(describe(), equals('Age: 25, Height: 1.75m, Student: true'));\n  });\n}",
+      "solutionCode": "var age = 25;\nvar height = 1.75;\nvar isStudent = true;\n\nString describe() {\n  return 'Age: $age, Height: ${height}m, Student: $isStudent';\n}\n\nvoid main() {\n  print(describe());\n}",
+      "hints": [
+        "Sử dụng var để khai báo biến, Dart sẽ tự động suy luận kiểu dữ liệu",
+        "Cú pháp: var variableName = value;",
+        "Dùng string interpolation ($) để nhúng các biến vào chuỗi"
+      ],
+      "expectedConcepts": ["var", "type_inference", "string_interpolation"],
+      "commonMistakes": [
+        {
+          "id": "explicit_type",
+          "pattern": "int age =",
+          "explanation": "Đang khai báo kiểu tường minh thay vì type inference",
+          "hint": "Bài tập yêu cầu sử dụng var để Dart tự suy luận kiểu"
+        }
+      ]
+    },
+    {
+      "id": "basics-002",
+      "lessonId": "basics",
+      "title": "Final Variables",
+      "conceptTags": ["final", "immutability", "variables"],
+      "difficulty": "beginner",
+      "instructions": "Khai báo các biến `final` sau:\n\n- `appName` với giá trị \"DartTutor\"\n- `version` với giá trị \"1.0.0\"\n- `releaseYear` với giá trị 2024\n\nViết function `getAppInfo()` trả về chuỗi: \"{appName} v{version} ({releaseYear})\"",
+      "starterCode": "// TODO: Khai báo appName, version, releaseYear với final\n\nString getAppInfo() {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  print(getAppInfo());\n  // Thử uncomment dòng dưới để thấy lỗi compile:\n  // appName = 'NewName'; // Error: final variable không thể thay đổi\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('final variables are declared correctly', () {\n    expect(appName, equals('DartTutor'));\n    expect(version, equals('1.0.0'));\n    expect(releaseYear, equals(2024));\n  });\n\n  test('getAppInfo returns correct format', () {\n    expect(getAppInfo(), equals('DartTutor v1.0.0 (2024)'));\n  });\n}",
+      "solutionCode": "final appName = 'DartTutor';\nfinal version = '1.0.0';\nfinal releaseYear = 2024;\n\nString getAppInfo() {\n  return '$appName v$version ($releaseYear)';\n}\n\nvoid main() {\n  print(getAppInfo());\n  // Thử uncomment dòng dưới để thấy lỗi compile:\n  // appName = 'NewName'; // Error: final variable không thể thay đổi\n}",
+      "hints": [
+        "final variables chỉ có thể được gán giá trị một lần duy nhất",
+        "Cú pháp: final variableName = value;",
+        "Sử dụng final khi giá trị không thay đổi sau khi khởi tạo"
+      ],
+      "expectedConcepts": ["final", "immutability", "string_interpolation"],
+      "commonMistakes": [
+        {
+          "id": "var_instead_of_final",
+          "pattern": "var appName",
+          "explanation": "Đang dùng var thay vì final",
+          "hint": "Bài tập yêu cầu sử dụng final để đảm bảo giá trị không đổi"
+        }
+      ]
+    },
+    {
+      "id": "basics-003",
+      "lessonId": "basics",
+      "title": "Late Variables",
+      "conceptTags": ["late", "variables", "initialization"],
+      "difficulty": "beginner",
+      "instructions": "Khai báo biến `late String description;` ở top-level.\n\nViết function `initDescription(String value)` để gán giá trị cho `description`.\n\nViết function `getDescription()` trả về giá trị của `description`.\n\nLưu ý: late variables phải được khởi tạo trước khi sử dụng, nếu không sẽ báo lỗi runtime.",
+      "starterCode": "// TODO: Khai báo late String description;\n\nvoid initDescription(String value) {\n  // TODO: Implement\n}\n\nString getDescription() {\n  // TODO: Implement\n  return '';\n}\n\nvoid main() {\n  initDescription('This is a late variable example');\n  print(getDescription());\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('late variable works correctly', () {\n    initDescription('Test description');\n    expect(getDescription(), equals('Test description'));\n  });\n\n  test('late variable can be reassigned', () {\n    initDescription('First value');\n    expect(getDescription(), equals('First value'));\n    \n    initDescription('Second value');\n    expect(getDescription(), equals('Second value'));\n  });\n}",
+      "solutionCode": "late String description;\n\nvoid initDescription(String value) {\n  description = value;\n}\n\nString getDescription() {\n  return description;\n}\n\nvoid main() {\n  initDescription('This is a late variable example');\n  print(getDescription());\n}",
+      "hints": [
+        "late cho phép khai báo biến không nullable mà chưa khởi tạo ngay",
+        "Cú pháp: late Type variableName;",
+        "Phải gán giá trị cho late variable trước khi đọc, nếu không sẽ lỗi runtime",
+        "late variables có thể được gán lại nhiều lần (khác với final)"
+      ],
+      "expectedConcepts": ["late", "variable_initialization", "runtime_check"],
+      "commonMistakes": [
+        {
+          "id": "missing_late",
+          "pattern": "String description;",
+          "explanation": "Biến non-nullable phải được khởi tạo hoặc dùng late",
+          "hint": "Thêm từ khóa late trước String để khai báo biến sẽ được khởi tạo sau"
+        },
+        {
+          "id": "nullable_instead",
+          "pattern": "String? description;",
+          "explanation": "Đang dùng nullable (?) thay vì late",
+          "hint": "Bài tập yêu cầu sử dụng late, không phải nullable type"
+        }
+      ]
+    },
+    {
+      "id": "basics-004",
+      "lessonId": "basics",
       "title": "String Interpolation",
       "conceptTags": ["strings", "interpolation", "variables"],
       "difficulty": "beginner",
@@ -35,7 +117,7 @@
       ]
     },
     {
-      "id": "basics-002",
+      "id": "basics-005",
       "lessonId": "basics",
       "title": "Final vs Const",
       "conceptTags": ["variables", "final", "const", "immutability"],
@@ -60,7 +142,7 @@
       ]
     },
     {
-      "id": "basics-003",
+      "id": "basics-006",
       "lessonId": "basics",
       "title": "Greeting Function",
       "conceptTags": ["functions", "parameters", "string_interpolation", "conditionals"],

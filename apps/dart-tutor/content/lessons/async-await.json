@@ -86,6 +86,58 @@
           "hint": "Wrap await riskyOperation() trong try-catch block"
         }
       ]
+    },
+    {
+      "id": "async-004",
+      "lessonId": "async-await",
+      "title": "Parallel Async with Future.wait",
+      "conceptTags": ["async", "future_wait", "parallel"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `fetchAllParallel()` gọi `fetchItem()` 3 lần SONG SONG và return list kết quả.\n\nSử dụng `Future.wait([...])` để chạy parallel.\n\nKết quả: `['Item 1', 'Item 2', 'Item 3']` (nhanh hơn sequential)\n\nVí dụ:\n- Sequential (1500ms): await 1 → await 2 → await 3\n- Parallel (500ms): await all cùng lúc",
+      "starterCode": "Future<String> fetchItem(int id) async {\n  await Future.delayed(Duration(milliseconds: 500));\n  return 'Item $id';\n}\n\nFuture<List<String>> fetchAllParallel() async {\n  // TODO: Dùng Future.wait để fetch parallel\n  return [];\n}\n\nvoid main() async {\n  final items = await fetchAllParallel();\n  print(items);  // [Item 1, Item 2, Item 3]\n}",
+      "testCode": "import 'package:test/test.dart';\n\nFuture<String> fetchItem(int id) async {\n  await Future.delayed(Duration(milliseconds: 100));\n  return 'Item $id';\n}\n\nvoid main() {\n  test('fetchAllParallel returns 3 items', () async {\n    final result = await fetchAllParallel();\n    expect(result.length, equals(3));\n  });\n\n  test('Items in correct order', () async {\n    final result = await fetchAllParallel();\n    expect(result[0], equals('Item 1'));\n    expect(result[1], equals('Item 2'));\n    expect(result[2], equals('Item 3'));\n  });\n\n  test('Executes in parallel (faster than sequential)', () async {\n    final stopwatch = Stopwatch()..start();\n    await fetchAllParallel();\n    stopwatch.stop();\n    // Parallel should be ~100ms, sequential would be ~300ms\n    expect(stopwatch.elapsedMilliseconds, lessThan(250));\n  });\n}",
+      "solutionCode": "Future<String> fetchItem(int id) async {\n  await Future.delayed(Duration(milliseconds: 500));\n  return 'Item $id';\n}\n\nFuture<List<String>> fetchAllParallel() async {\n  return await Future.wait([\n    fetchItem(1),\n    fetchItem(2),\n    fetchItem(3),\n  ]);\n}\n\nvoid main() async {\n  final items = await fetchAllParallel();\n  print(items);\n}",
+      "hints": [
+        "Future.wait nhận List<Future> và trả về Future<List>",
+        "Cú pháp: await Future.wait([future1, future2, future3])",
+        "Tất cả futures chạy song song, chờ tất cả xong mới return",
+        "Nhanh hơn sequential vì không đợi từng cái"
+      ],
+      "expectedConcepts": ["async", "future_wait", "parallel_execution"],
+      "commonMistakes": [
+        {
+          "id": "SEQUENTIAL_INSTEAD_OF_PARALLEL",
+          "pattern": "timeout",
+          "explanation": "Đang chạy sequential thay vì parallel",
+          "hint": "Dùng Future.wait([...]) thay vì await từng cái riêng lẻ"
+        }
+      ]
+    },
+    {
+      "id": "async-005",
+      "lessonId": "async-await",
+      "title": "Timeout Handling",
+      "conceptTags": ["async", "timeout", "error_handling"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `fetchWithTimeout(int seconds)` gọi async operation với timeout.\n\nNếu operation mất > 2 giây: return \"Timeout\"\nNếu hoàn thành kịp: return kết quả\n\nSử dụng `Future.timeout(Duration(seconds: 2))`.\n\nVí dụ:\n- `fetchWithTimeout(1)` → `'Data loaded'`\n- `fetchWithTimeout(3)` → `'Timeout'`",
+      "starterCode": "Future<String> slowFetch(int seconds) async {\n  await Future.delayed(Duration(seconds: seconds));\n  return 'Data loaded';\n}\n\nFuture<String> fetchWithTimeout(int seconds) async {\n  // TODO: Call slowFetch with timeout, handle TimeoutException\n  return '';\n}\n\nvoid main() async {\n  print(await fetchWithTimeout(1));  // Data loaded\n  print(await fetchWithTimeout(3));  // Timeout\n}",
+      "testCode": "import 'package:test/test.dart';\n\nFuture<String> slowFetch(int seconds) async {\n  await Future.delayed(Duration(seconds: seconds));\n  return 'Data loaded';\n}\n\nvoid main() {\n  test('Fast fetch completes', () async {\n    final result = await fetchWithTimeout(1);\n    expect(result, equals('Data loaded'));\n  });\n\n  test('Slow fetch times out', () async {\n    final result = await fetchWithTimeout(3);\n    expect(result, equals('Timeout'));\n  });\n}",
+      "solutionCode": "Future<String> slowFetch(int seconds) async {\n  await Future.delayed(Duration(seconds: seconds));\n  return 'Data loaded';\n}\n\nFuture<String> fetchWithTimeout(int seconds) async {\n  try {\n    return await slowFetch(seconds).timeout(\n      Duration(seconds: 2),\n    );\n  } catch (e) {\n    return 'Timeout';\n  }\n}\n\nvoid main() async {\n  print(await fetchWithTimeout(1));\n  print(await fetchWithTimeout(3));\n}",
+      "hints": [
+        "Gọi slowFetch(seconds).timeout(Duration(seconds: 2))",
+        "timeout() throw TimeoutException nếu quá thời gian",
+        "Dùng try-catch để catch exception",
+        "Return 'Timeout' trong catch block"
+      ],
+      "expectedConcepts": ["async", "timeout", "exception_handling", "try_catch"],
+      "commonMistakes": [
+        {
+          "id": "EXCEPTION_NOT_HANDLED",
+          "pattern": "TimeoutException",
+          "explanation": "TimeoutException không được catch",
+          "hint": "Wrap await ...timeout() trong try-catch"
+        }
+      ]
     }
   ]
 }
