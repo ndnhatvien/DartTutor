@@ -19,6 +19,7 @@ export default function ExerciseView({ exercise, onBack, onNextExercise }: Exerc
   const [tutorResponse, setTutorResponse] = useState<TutorResponse | null>(null);
   const [lastResult, setLastResult] = useState<ExerciseResult | null>(null);
   const [showSolution, setShowSolution] = useState(false);
+  const [showGuidance, setShowGuidance] = useState(false);
 
   const tutorProvider = new HybridTutorProvider(exercise);
   const exerciseState = learnerStateManager.getExerciseState(exercise.id);
@@ -27,6 +28,7 @@ export default function ExerciseView({ exercise, onBack, onNextExercise }: Exerc
     // Reset tutor response when exercise changes
     setTutorResponse(null);
     setShowSolution(false);
+    setShowGuidance(false);
   }, []);
 
   const difficultyColors = {
@@ -251,6 +253,7 @@ export default function ExerciseView({ exercise, onBack, onNextExercise }: Exerc
           <DartPadEmbed
             initialCode={exercise.starterCode}
             testCode={exercise.testCode}
+            onTestsRun={() => setShowGuidance(true)}
             onConsoleOutput={handleConsoleOutput}
             onCompilationError={handleCompilationError}
           />
@@ -430,6 +433,63 @@ export default function ExerciseView({ exercise, onBack, onNextExercise }: Exerc
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {showGuidance && (
+            <div
+              style={{
+                marginTop: '1rem',
+                padding: '1rem',
+                backgroundColor: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                borderRadius: '8px',
+                color: '#1e3a8a',
+              }}
+            >
+              <div style={{ fontWeight: 600, marginBottom: '0.75rem', fontSize: '1rem' }}>
+                📘 Hướng dẫn
+              </div>
+              {exercise.hints.length > 0 && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>💡 Gợi ý từng bước:</div>
+                  <ol style={{ margin: 0, paddingLeft: '1.5rem', lineHeight: '1.8' }}>
+                    {exercise.hints.map((hint) => (
+                      <li key={hint} style={{ fontSize: '0.9rem' }}>
+                        {hint}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+              {exercise.commonMistakes.length > 0 && (
+                <div>
+                  <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>⚠️ Lỗi thường gặp:</div>
+                  {exercise.commonMistakes.map((mistake) => (
+                    <details
+                      key={mistake.id}
+                      style={{
+                        backgroundColor: 'white',
+                        padding: '0.75rem',
+                        borderRadius: '6px',
+                        border: '1px solid #dbeafe',
+                        marginBottom: '0.5rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <summary style={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                        {mistake.pattern}
+                      </summary>
+                      <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#475569' }}>
+                        {mistake.explanation}
+                      </p>
+                      <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: '#1d4ed8' }}>
+                        💡 {mistake.hint}
+                      </p>
+                    </details>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

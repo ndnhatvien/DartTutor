@@ -4,22 +4,161 @@ interface DartPadEmbedProps {
   initialCode: string;
   testCode?: string;
   onReady?: () => void;
+  onTestsRun?: () => void;
   onConsoleOutput?: (output: string) => void;
   onCompilationError?: (error: string) => void;
 }
 
-function transformTestCode(raw: string): string {
+function findClosingParen(s: string, start: number): number {
+  let depth = 0;
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = start; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === '\\' && (inSingle || inDouble)) {
+      i++;
+      continue;
+    }
+    if (ch === "'" && !inDouble) inSingle = !inSingle;
+    else if (ch === '"' && !inSingle) inDouble = !inDouble;
+    if (!inSingle && !inDouble) {
+      if (ch === '(') depth++;
+      else if (ch === ')') {
+        depth--;
+        if (depth === 0) return i;
+      }
+    }
+  }
+  return -1;
+}
+
+function replaceExpectations(code: string): string {
+  let result = code;
+  const marker = '\x00';
+  const placeholders: string[] = [];
+  let searchFrom = 0;
+
+  while (true) {
+    const idx = result.indexOf('expect(', searchFrom);
+    if (idx === -1) break;
+    const parenStart = idx + 6;
+    const parenEnd = findClosingParen(result, parenStart);
+    if (parenEnd === -1) {
+      searchFrom = idx + 7;
+      continue;
+    }
+    const inner = result.slice(parenStart + 1, parenEnd);
+    const commaIdx = inner.indexOf(',');
+    if (commaIdx === -1) {
+      searchFrom = idx + 7;
+      continue;
+    }
+    const actual = inner.slice(0, commaIdx).trim();
+    const matcher = inner.slice(commaIdx + 1).trim();
+    let replacement = '';
+
+    if (matcher === 'isNull') {
+      replacement = `assert((${actual}) == null)`;
+    } else if (matcher === 'isNotNull') {
+      replacement = `assert((${actual}) != null)`;
+    } else if (matcher === 'isTrue') {
+      replacement = `assert((${actual}) == true)`;
+    } else if (matcher === 'isFalse') {
+      replacement = `assert((${actual}) == false)`;
+    } else if (matcher === 'isEmpty') {
+      replacement = `assert((${actual}).isEmpty)`;
+    } else if (matcher.startsWith('equals(')) {
+      const eqOpen = matcher.indexOf('(');
+      const eqEnd = findClosingParen(matcher, eqOpen);
+      if (eqEnd !== -1) {
+        const expected = matcher.slice(eqOpen + 1, eqEnd);
+        replacement = `assert((${actual}) == (${expected}))`;
+      }
+    } else if (matcher.startsWith('contains(')) {
+      const cOpen = matcher.indexOf('(');
+      const cEnd = findClosingParen(matcher, cOpen);
+      if (cEnd !== -1) {
+        const expected = matcher.slice(cOpen + 1, cEnd);
+        replacement = `assert((${actual}).toString().contains(${expected}))`;
+      }
+    } else if (matcher.startsWith('containsAll(')) {
+      const cOpen = matcher.indexOf('(');
+      const cEnd = findClosingParen(matcher, cOpen);
+      if (cEnd !== -1) {
+        const expected = matcher.slice(cOpen + 1, cEnd);
+        replacement = `assert((${expected}).every((e) => (${actual}).contains(e)))`;
+      }
+    } else if (matcher.startsWith('isA<')) {
+      const typeEnd = matcher.indexOf('>');
+      if (typeEnd !== -1) {
+        const type = matcher.slice(4, typeEnd);
+        replacement = `assert((${actual}) is ${type})`;
+      }
+    } else if (matcher.startsWith('greaterThan(')) {
+      const o = matcher.indexOf('(');
+      const e = findClosingParen(matcher, o);
+      if (e !== -1) {
+        const expected = matcher.slice(o + 1, e);
+        replacement = `assert((${actual}) > (${expected}))`;
+      }
+    } else if (matcher.startsWith('lessThan(')) {
+      const o = matcher.indexOf('(');
+      const e = findClosingParen(matcher, o);
+      if (e !== -1) {
+        const expected = matcher.slice(o + 1, e);
+        replacement = `assert((${actual}) < (${expected}))`;
+      }
+    } else if (matcher.startsWith('closeTo(')) {
+      const o = matcher.indexOf('(');
+      const e = findClosingParen(matcher, o);
+      if (e !== -1) {
+        const args = matcher.slice(o + 1, e);
+        const comma = args.indexOf(',');
+        if (comma !== -1) {
+          const value = args.slice(0, comma).trim();
+          const delta = args.slice(comma + 1).trim();
+          replacement = `assert(((${actual}) - (${value})).abs() <= (${delta}))`;
+        }
+      }
+    } else if (matcher.startsWith('startsWith(')) {
+      const o = matcher.indexOf('(');
+      const e = findClosingParen(matcher, o);
+      if (e !== -1) {
+        const expected = matcher.slice(o + 1, e);
+        replacement = `assert((${actual}).toString().startsWith(${expected}))`;
+      }
+    } else if (matcher === 'throwsException') {
+      replacement = `try { ${actual}; assert(false, 'Expected exception'); } catch (_) {}`;
+    } else if (matcher.startsWith('throwsA(')) {
+      replacement = `try { ${actual}; assert(false, 'Expected exception'); } catch (_) {}`;
+    } else {
+      replacement = `assert((${actual}) == (${matcher}))`;
+    }
+
+    if (replacement) {
+      const ph = `${marker}${placeholders.length}${marker}`;
+      placeholders.push(replacement);
+      result = result.slice(0, idx) + ph + result.slice(parenEnd + 1);
+      searchFrom = idx + ph.length;
+    } else {
+      searchFrom = idx + 7;
+    }
+  }
+
+  for (let i = 0; i < placeholders.length; i++) {
+    result = result.replaceAll(`${marker}${i}${marker}`, placeholders[i] ?? '');
+  }
+  return result;
+}
+
+function transformTestCode(raw: string): { code: string; needsAsync: boolean } {
   let code = raw;
   code = code.replace(/^import\s+'package:test\/test\.dart';\s*\n?/m, '');
+  code = replaceExpectations(code);
 
-  code = code.replace(/expect\(([^,]+),\s*equals\(([^)]+)\)\)/g, 'assert(($1) == ($2))');
-  code = code.replace(/expect\(([^,]+),\s*isNull\)/g, 'assert(($1) == null)');
-  code = code.replace(/expect\(([^,]+),\s*isNotNull\)/g, 'assert(($1) != null)');
-  code = code.replace(/expect\(([^,]+),\s*isTrue\)/g, 'assert(($1) == true)');
-  code = code.replace(/expect\(([^,]+),\s*isFalse\)/g, 'assert(($1) == false)');
-
-  const tests: { name: string; body: string; async: boolean }[] = [];
+  const tests: { name: string; body: string }[] = [];
   const testRegex = /test\(\s*'([^']+)'\s*,\s*\(\)\s*(async\s+)?\{/g;
+  let needsAsync = false;
   let match = testRegex.exec(code);
   while (match !== null) {
     const name = match[1] ?? 'unnamed test';
@@ -32,16 +171,22 @@ function transformTestCode(raw: string): string {
       else if (code[j] === '}') depth--;
       j++;
     }
-    const body = code.slice(bodyStart, j - 1).trim();
-    tests.push({ name, body, async: isAsync });
+    let body = code.slice(bodyStart, j - 1).trim();
+    if (isAsync) {
+      needsAsync = true;
+      body = body.replace(/\bawait\b/g, 'await');
+    }
+    tests.push({ name, body });
     match = testRegex.exec(code);
   }
 
-  if (tests.length === 0) return code;
+  if (tests.length === 0) return { code, needsAsync: false };
 
   let result = '';
   for (const t of tests) {
     const lines = t.body.split('\n').filter((l) => l.trim());
+    const hasAwait = /\bawait\b/.test(t.body);
+    if (hasAwait) needsAsync = true;
     result += `  // ${t.name}\n  try {\n`;
     for (const line of lines) {
       result += `    ${line.trim()}\n`;
@@ -49,13 +194,14 @@ function transformTestCode(raw: string): string {
     result += `    print('\\u2705 ${t.name}');\n`;
     result += `  } catch (e) {\n    print('\\u274c ${t.name}: \\$e');\n  }\n\n`;
   }
-  return result.trimEnd();
+  return { code: result.trimEnd(), needsAsync };
 }
 
 export default function DartPadEmbed({
   initialCode,
   testCode,
   onReady,
+  onTestsRun,
   onConsoleOutput,
   onCompilationError,
 }: DartPadEmbedProps) {
@@ -105,18 +251,16 @@ export default function DartPadEmbed({
     return () => window.removeEventListener('message', handleMessage);
   }, [onReady, onConsoleOutput, onCompilationError, sendCodeToDartPad, initialCode]);
 
-  const runCode = () => {
-    sendCodeToDartPad(lastCodeRef.current);
-  };
-
   const runTests = () => {
     if (!testCode) return;
     const userCode = lastCodeRef.current;
     const mainIdx = userCode.indexOf('\nvoid main(');
     const codeWithoutMain = mainIdx !== -1 ? userCode.substring(0, mainIdx) : userCode;
-    const transformed = transformTestCode(testCode);
-    const combinedCode = `${codeWithoutMain}\n\nvoid main() {\n${transformed}\n}`;
+    const { code: transformed, needsAsync } = transformTestCode(testCode);
+    const fnPrefix = needsAsync ? 'async ' : '';
+    const combinedCode = `${codeWithoutMain}\n\nvoid main() ${fnPrefix}{\n${transformed}\n}`;
     sendCodeToDartPad(combinedCode);
+    onTestsRun?.();
   };
 
   return (
@@ -135,23 +279,6 @@ export default function DartPadEmbed({
       />
 
       <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-        <button
-          onClick={runCode}
-          disabled={!isReady}
-          style={{
-            padding: '0.75rem 1.5rem',
-            backgroundColor: isReady ? '#10b981' : '#9ca3af',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: isReady ? 'pointer' : 'not-allowed',
-            fontWeight: 500,
-          }}
-          type="button"
-        >
-          ▶️ Run
-        </button>
-
         {testCode && (
           <button
             onClick={runTests}
