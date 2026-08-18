@@ -1,16 +1,18 @@
 name: PR Title Check
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, edited, synchronize, reopened]
 
 jobs:
   title:
     name: Validate PR Title
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
+    permissions:
+      pull-requests: read
     steps:
       - name: Check PR title
-        uses: amannn/action-semantic-pull-request@v5
+        uses: amannn/action-semantic-pull-request@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
