@@ -1,0 +1,97 @@
+{
+  "id": "control-flow",
+  "title": "Control Flow",
+  "description": "Học cách điều khiển luồng chương trình với if/else, loops, và switch",
+  "objectives": [
+    "Sử dụng if/else để ra quyết định",
+    "Lặp với for và while loops",
+    "Sử dụng switch/case",
+    "Viết boolean expressions"
+  ],
+  "prerequisites": ["basics"],
+  "exercises": [
+    {
+      "id": "control-flow-001",
+      "lessonId": "control-flow",
+      "title": "Grade Classification",
+      "conceptTags": ["if_else", "conditionals", "comparison"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `classifyGrade(int score)` trả về xếp loại dựa trên điểm:\n\n- 90-100: \"A\"\n- 80-89: \"B\"\n- 70-79: \"C\"\n- 60-69: \"D\"\n- Dưới 60: \"F\"\n\nVí dụ:\n- `classifyGrade(95)` → `\"A\"`\n- `classifyGrade(73)` → `\"C\"`\n- `classifyGrade(55)` → `\"F\"`",
+      "starterCode": "String classifyGrade(int score) {\n  // TODO: Implement grade classification\n  return '';\n}\n\nvoid main() {\n  print(classifyGrade(95));  // Should print: A\n  print(classifyGrade(73));  // Should print: C\n  print(classifyGrade(55));  // Should print: F\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('A grade (90-100)', () {\n    expect(classifyGrade(90), equals('A'));\n    expect(classifyGrade(95), equals('A'));\n    expect(classifyGrade(100), equals('A'));\n  });\n\n  test('B grade (80-89)', () {\n    expect(classifyGrade(80), equals('B'));\n    expect(classifyGrade(85), equals('B'));\n    expect(classifyGrade(89), equals('B'));\n  });\n\n  test('C grade (70-79)', () {\n    expect(classifyGrade(70), equals('C'));\n    expect(classifyGrade(75), equals('C'));\n  });\n\n  test('D grade (60-69)', () {\n    expect(classifyGrade(60), equals('D'));\n    expect(classifyGrade(65), equals('D'));\n  });\n\n  test('F grade (below 60)', () {\n    expect(classifyGrade(59), equals('F'));\n    expect(classifyGrade(0), equals('F'));\n  });\n}",
+      "solutionCode": "String classifyGrade(int score) {\n  if (score >= 90) {\n    return 'A';\n  } else if (score >= 80) {\n    return 'B';\n  } else if (score >= 70) {\n    return 'C';\n  } else if (score >= 60) {\n    return 'D';\n  } else {\n    return 'F';\n  }\n}\n\nvoid main() {\n  print(classifyGrade(95));\n  print(classifyGrade(73));\n  print(classifyGrade(55));\n}",
+      "hints": [
+        "Sử dụng if-else if-else chain để kiểm tra từng range",
+        "Bắt đầu từ điểm cao nhất (>= 90) rồi xuống thấp dần",
+        "Nhớ dùng >= (greater than or equal) cho các boundary values"
+      ],
+      "expectedConcepts": ["if_else", "comparison_operators", "return_statement"],
+      "commonMistakes": [
+        {
+          "id": "WRONG_BOOLEAN_CONDITION",
+          "pattern": "Expected: A",
+          "explanation": "Điều kiện so sánh chưa đúng",
+          "hint": "Kiểm tra lại các toán tử >= và thứ tự kiểm tra điều kiện"
+        }
+      ]
+    },
+    {
+      "id": "control-flow-002",
+      "lessonId": "control-flow",
+      "title": "FizzBuzz",
+      "conceptTags": ["loops", "modulo", "conditionals"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `fizzBuzz(int n)` trả về danh sách strings từ 1 đến n:\n\n- Số chia hết cho 3: \"Fizz\"\n- Số chia hết cho 5: \"Buzz\"\n- Chia hết cho cả 3 và 5: \"FizzBuzz\"\n- Các số khác: số đó dưới dạng string\n\nVí dụ: `fizzBuzz(15)` → `[\"1\", \"2\", \"Fizz\", \"4\", \"Buzz\", \"Fizz\", \"7\", \"8\", \"Fizz\", \"Buzz\", \"11\", \"Fizz\", \"13\", \"14\", \"FizzBuzz\"]`",
+      "starterCode": "List<String> fizzBuzz(int n) {\n  // TODO: Implement FizzBuzz\n  return [];\n}\n\nvoid main() {\n  print(fizzBuzz(15));\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('FizzBuzz for n=15', () {\n    final result = fizzBuzz(15);\n    expect(result[0], equals('1'));\n    expect(result[2], equals('Fizz'));    // 3\n    expect(result[4], equals('Buzz'));    // 5\n    expect(result[14], equals('FizzBuzz')); // 15\n  });\n\n  test('FizzBuzz length', () {\n    expect(fizzBuzz(5).length, equals(5));\n    expect(fizzBuzz(10).length, equals(10));\n  });\n\n  test('Regular numbers', () {\n    final result = fizzBuzz(5);\n    expect(result[0], equals('1'));\n    expect(result[1], equals('2'));\n    expect(result[3], equals('4'));\n  });\n}",
+      "solutionCode": "List<String> fizzBuzz(int n) {\n  final result = <String>[];\n  \n  for (int i = 1; i <= n; i++) {\n    if (i % 15 == 0) {\n      result.add('FizzBuzz');\n    } else if (i % 3 == 0) {\n      result.add('Fizz');\n    } else if (i % 5 == 0) {\n      result.add('Buzz');\n    } else {\n      result.add(i.toString());\n    }\n  }\n  \n  return result;\n}\n\nvoid main() {\n  print(fizzBuzz(15));\n}",
+      "hints": [
+        "Sử dụng for loop từ 1 đến n (inclusive)",
+        "Dùng toán tử % (modulo) để kiểm tra chia hết: i % 3 == 0",
+        "Kiểm tra chia hết cho 15 TRƯỚC khi kiểm tra 3 hoặc 5",
+        "Dùng i.toString() để convert số thành string"
+      ],
+      "expectedConcepts": ["for_loop", "modulo", "if_else", "list"],
+      "commonMistakes": [
+        {
+          "id": "WRONG_BOOLEAN_CONDITION",
+          "pattern": "Expected: FizzBuzz",
+          "explanation": "Thứ tự kiểm tra điều kiện sai - phải check 15 trước",
+          "hint": "Kiểm tra i % 15 == 0 trước các điều kiện khác"
+        },
+        {
+          "id": "OFF_BY_ONE",
+          "pattern": "RangeError",
+          "explanation": "Loop chạy sai range hoặc thiếu giá trị",
+          "hint": "For loop nên chạy từ 1 đến n (inclusive): for (int i = 1; i <= n; i++)"
+        }
+      ]
+    },
+    {
+      "id": "control-flow-003",
+      "lessonId": "control-flow",
+      "title": "Calculator",
+      "conceptTags": ["switch", "operators", "error_handling"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `calculate(double a, double b, String operator)` thực hiện phép tính dựa trên operator:\n\n- \"+\": cộng\n- \"-\": trừ\n- \"*\": nhân\n- \"/\": chia\n- Invalid operator: throw Exception\n\nVí dụ:\n- `calculate(10, 5, \"+\")` → `15.0`\n- `calculate(10, 3, \"/\")` → `3.333...`\n- `calculate(5, 2, \"^\")` → Exception",
+      "starterCode": "double calculate(double a, double b, String operator) {\n  // TODO: Implement calculator\n  return 0;\n}\n\nvoid main() {\n  print(calculate(10, 5, '+'));   // 15\n  print(calculate(10, 5, '-'));   // 5\n  print(calculate(10, 5, '*'));   // 50\n  print(calculate(10, 5, '/'));   // 2\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Addition', () {\n    expect(calculate(10, 5, '+'), equals(15));\n    expect(calculate(3.5, 2.5, '+'), equals(6));\n  });\n\n  test('Subtraction', () {\n    expect(calculate(10, 5, '-'), equals(5));\n    expect(calculate(3, 7, '-'), equals(-4));\n  });\n\n  test('Multiplication', () {\n    expect(calculate(10, 5, '*'), equals(50));\n    expect(calculate(3, 0, '*'), equals(0));\n  });\n\n  test('Division', () {\n    expect(calculate(10, 5, '/'), equals(2));\n    expect(calculate(10, 4, '/'), closeTo(2.5, 0.01));\n  });\n\n  test('Invalid operator throws', () {\n    expect(() => calculate(1, 2, '^'), throwsException);\n    expect(() => calculate(1, 2, '%'), throwsException);\n  });\n}",
+      "solutionCode": "double calculate(double a, double b, String operator) {\n  switch (operator) {\n    case '+':\n      return a + b;\n    case '-':\n      return a - b;\n    case '*':\n      return a * b;\n    case '/':\n      return a / b;\n    default:\n      throw Exception('Invalid operator: $operator');\n  }\n}\n\nvoid main() {\n  print(calculate(10, 5, '+'));\n  print(calculate(10, 5, '-'));\n  print(calculate(10, 5, '*'));\n  print(calculate(10, 5, '/'));\n}",
+      "hints": [
+        "Sử dụng switch statement để kiểm tra operator",
+        "Mỗi case trả về kết quả tính toán tương ứng",
+        "default case nên throw Exception('...')",
+        "Dart switch không cần break nếu return trong case"
+      ],
+      "expectedConcepts": ["switch_statement", "operators", "exception_handling"],
+      "commonMistakes": [
+        {
+          "id": "EXCEPTION_NOT_HANDLED",
+          "pattern": "Invalid operator",
+          "explanation": "Chưa xử lý trường hợp operator không hợp lệ",
+          "hint": "Sử dụng default case trong switch để throw Exception"
+        }
+      ]
+    }
+  ]
+}

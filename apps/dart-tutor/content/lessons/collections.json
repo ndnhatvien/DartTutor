@@ -1,0 +1,91 @@
+{
+  "id": "collections",
+  "title": "Collections",
+  "description": "Học cách làm việc với List, Set, Map và các methods như where, map, fold",
+  "objectives": [
+    "Sử dụng List, Set, Map",
+    "Filter với where",
+    "Transform với map",
+    "Aggregate với fold/reduce"
+  ],
+  "prerequisites": ["basics", "control-flow", "functions-null-safety"],
+  "exercises": [
+    {
+      "id": "collections-001",
+      "lessonId": "collections",
+      "title": "Filter Even Numbers",
+      "conceptTags": ["list", "where", "filtering"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `filterEven(List<int> numbers)` trả về list chỉ chứa số chẵn.\n\nVí dụ:\n- `filterEven([1, 2, 3, 4, 5])` → `[2, 4]`\n- `filterEven([1, 3, 5])` → `[]`\n- `filterEven([2, 4, 6])` → `[2, 4, 6]`",
+      "starterCode": "List<int> filterEven(List<int> numbers) {\n  // TODO: Implement\n  return [];\n}\n\nvoid main() {\n  print(filterEven([1, 2, 3, 4, 5]));  // [2, 4]\n  print(filterEven([1, 3, 5]));        // []\n  print(filterEven([2, 4, 6]));        // [2, 4, 6]\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Mixed numbers', () {\n    expect(filterEven([1, 2, 3, 4, 5]), equals([2, 4]));\n    expect(filterEven([10, 15, 20, 25]), equals([10, 20]));\n  });\n\n  test('All odd numbers', () {\n    expect(filterEven([1, 3, 5]), equals([]));\n  });\n\n  test('All even numbers', () {\n    expect(filterEven([2, 4, 6]), equals([2, 4, 6]));\n  });\n\n  test('Empty list', () {\n    expect(filterEven([]), equals([]));\n  });\n}",
+      "solutionCode": "List<int> filterEven(List<int> numbers) {\n  return numbers.where((n) => n % 2 == 0).toList();\n}\n\nvoid main() {\n  print(filterEven([1, 2, 3, 4, 5]));\n  print(filterEven([1, 3, 5]));\n  print(filterEven([2, 4, 6]));\n}",
+      "hints": [
+        "Sử dụng method where() để filter",
+        "Điều kiện: n % 2 == 0 (chia hết cho 2)",
+        "where() trả về Iterable, dùng .toList() để convert về List",
+        "Arrow function: (n) => n % 2 == 0"
+      ],
+      "expectedConcepts": ["list", "where", "lambda", "modulo"],
+      "commonMistakes": [
+        {
+          "id": "ITERABLE_VS_LIST_CONFUSION",
+          "pattern": "Iterable",
+          "explanation": "where() trả về Iterable, cần .toList()",
+          "hint": "Thêm .toList() sau where(): numbers.where(...).toList()"
+        }
+      ]
+    },
+    {
+      "id": "collections-002",
+      "lessonId": "collections",
+      "title": "Transform to Squares",
+      "conceptTags": ["list", "map", "transformation"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `toSquares(List<int> numbers)` trả về list các số bình phương.\n\nVí dụ:\n- `toSquares([1, 2, 3])` → `[1, 4, 9]`\n- `toSquares([])` → `[]`\n- `toSquares([5])` → `[25]`",
+      "starterCode": "List<int> toSquares(List<int> numbers) {\n  // TODO: Implement\n  return [];\n}\n\nvoid main() {\n  print(toSquares([1, 2, 3]));  // [1, 4, 9]\n  print(toSquares([4, 5]));     // [16, 25]\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Small numbers', () {\n    expect(toSquares([1, 2, 3]), equals([1, 4, 9]));\n    expect(toSquares([4, 5]), equals([16, 25]));\n  });\n\n  test('Single element', () {\n    expect(toSquares([5]), equals([25]));\n  });\n\n  test('Empty list', () {\n    expect(toSquares([]), equals([]));\n  });\n\n  test('Zero', () {\n    expect(toSquares([0, 1]), equals([0, 1]));\n  });\n}",
+      "solutionCode": "List<int> toSquares(List<int> numbers) {\n  return numbers.map((n) => n * n).toList();\n}\n\nvoid main() {\n  print(toSquares([1, 2, 3]));\n  print(toSquares([4, 5]));\n}",
+      "hints": [
+        "Sử dụng method map() để transform",
+        "Transform function: (n) => n * n",
+        "map() trả về Iterable, dùng .toList() để convert"
+      ],
+      "expectedConcepts": ["list", "map", "lambda"],
+      "commonMistakes": [
+        {
+          "id": "ITERABLE_VS_LIST_CONFUSION",
+          "pattern": "Iterable",
+          "explanation": "map() trả về Iterable, cần .toList()",
+          "hint": "Thêm .toList() sau map(): numbers.map(...).toList()"
+        }
+      ]
+    },
+    {
+      "id": "collections-003",
+      "lessonId": "collections",
+      "title": "Count Values in Map",
+      "conceptTags": ["map", "fold", "aggregation"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `sumValues(Map<String, int> data)` trả về tổng các values trong Map.\n\nVí dụ:\n- `sumValues({'a': 1, 'b': 2, 'c': 3})` → `6`\n- `sumValues({})` → `0`\n- `sumValues({'x': 10})` → `10`",
+      "starterCode": "int sumValues(Map<String, int> data) {\n  // TODO: Implement\n  return 0;\n}\n\nvoid main() {\n  print(sumValues({'a': 1, 'b': 2, 'c': 3}));  // 6\n  print(sumValues({}));                        // 0\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Multiple entries', () {\n    expect(sumValues({'a': 1, 'b': 2, 'c': 3}), equals(6));\n    expect(sumValues({'x': 10, 'y': 20}), equals(30));\n  });\n\n  test('Single entry', () {\n    expect(sumValues({'x': 10}), equals(10));\n  });\n\n  test('Empty map', () {\n    expect(sumValues({}), equals(0));\n  });\n\n  test('Zero values', () {\n    expect(sumValues({'a': 0, 'b': 0}), equals(0));\n  });\n}",
+      "solutionCode": "int sumValues(Map<String, int> data) {\n  return data.values.fold(0, (sum, value) => sum + value);\n}\n\nvoid main() {\n  print(sumValues({'a': 1, 'b': 2, 'c': 3}));\n  print(sumValues({}));\n}",
+      "hints": [
+        "Lấy values từ Map bằng data.values",
+        "Sử dụng fold() để aggregate: fold(initialValue, combineFunction)",
+        "Initial value: 0, combine: (sum, value) => sum + value",
+        "fold accumulates một giá trị từ collection"
+      ],
+      "expectedConcepts": ["map", "fold", "aggregation", "lambda"],
+      "commonMistakes": [
+        {
+          "id": "WRONG_RETURN_TYPE",
+          "pattern": "type",
+          "explanation": "Đang trả về sai type hoặc chưa aggregate",
+          "hint": "fold(0, (sum, value) => sum + value) trả về tổng của tất cả values"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "id": "async-await",
+  "title": "Async/Await",
+  "description": "Học về asynchronous programming với Future, async, await, và error handling",
+  "objectives": [
+    "Hiểu Future và async/await",
+    "Đợi async operations với await",
+    "Xử lý errors trong async code",
+    "Sequencing async operations"
+  ],
+  "prerequisites": ["basics", "control-flow", "functions-null-safety", "collections"],
+  "exercises": [
+    {
+      "id": "async-001",
+      "lessonId": "async-await",
+      "title": "Await Future",
+      "conceptTags": ["async", "await", "future"],
+      "difficulty": "beginner",
+      "instructions": "Viết async function `fetchData()` trả về một string sau khi đợi.\n\nSử dụng `Future.delayed(Duration(seconds: 1), () => 'Data loaded')` để simulate async operation.\n\nFunction phải:\n- Được đánh dấu async\n- Await Future.delayed\n- Return kết quả",
+      "starterCode": "Future<String> fetchData() {\n  // TODO: Make this async and await the future\n  return Future.value('');\n}\n\nvoid main() async {\n  final data = await fetchData();\n  print(data);  // Should print: Data loaded\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('fetchData returns correct value', () async {\n    final result = await fetchData();\n    expect(result, equals('Data loaded'));\n  });\n\n  test('fetchData is async', () {\n    final future = fetchData();\n    expect(future, isA<Future<String>>());\n  });\n}",
+      "solutionCode": "Future<String> fetchData() async {\n  return await Future.delayed(\n    Duration(seconds: 1),\n    () => 'Data loaded',\n  );\n}\n\nvoid main() async {\n  final data = await fetchData();\n  print(data);\n}",
+      "hints": [
+        "Thêm async keyword sau function signature",
+        "Sử dụng await trước Future.delayed(...)",
+        "Future.delayed(Duration(seconds: 1), () => 'Data loaded')"
+      ],
+      "expectedConcepts": ["async", "await", "future"],
+      "commonMistakes": [
+        {
+          "id": "ASYNC_NOT_AWAITED",
+          "pattern": "unawaited",
+          "explanation": "Quên await Future",
+          "hint": "Dùng await trước Future.delayed"
+        }
+      ]
+    },
+    {
+      "id": "async-002",
+      "lessonId": "async-await",
+      "title": "Sequential Async",
+      "conceptTags": ["async", "await", "sequencing"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `fetchMultiple()` gọi `fetchItem()` 3 lần TUẦN TỰ và return list kết quả.\n\n`fetchItem(int id)` trả về `Future<String>` sau 500ms.\n\nKết quả phải theo thứ tự: `['Item 1', 'Item 2', 'Item 3']`",
+      "starterCode": "Future<String> fetchItem(int id) async {\n  await Future.delayed(Duration(milliseconds: 500));\n  return 'Item $id';\n}\n\nFuture<List<String>> fetchMultiple() async {\n  // TODO: Fetch items 1, 2, 3 sequentially\n  return [];\n}\n\nvoid main() async {\n  final items = await fetchMultiple();\n  print(items);  // [Item 1, Item 2, Item 3]\n}",
+      "testCode": "import 'package:test/test.dart';\n\nFuture<String> fetchItem(int id) async {\n  await Future.delayed(Duration(milliseconds: 100));\n  return 'Item $id';\n}\n\nvoid main() {\n  test('fetchMultiple returns 3 items', () async {\n    final result = await fetchMultiple();\n    expect(result.length, equals(3));\n  });\n\n  test('Items in correct order', () async {\n    final result = await fetchMultiple();\n    expect(result[0], equals('Item 1'));\n    expect(result[1], equals('Item 2'));\n    expect(result[2], equals('Item 3'));\n  });\n}",
+      "solutionCode": "Future<String> fetchItem(int id) async {\n  await Future.delayed(Duration(milliseconds: 500));\n  return 'Item $id';\n}\n\nFuture<List<String>> fetchMultiple() async {\n  final item1 = await fetchItem(1);\n  final item2 = await fetchItem(2);\n  final item3 = await fetchItem(3);\n  return [item1, item2, item3];\n}\n\nvoid main() async {\n  final items = await fetchMultiple();\n  print(items);\n}",
+      "hints": [
+        "Function phải là async",
+        "Gọi await fetchItem(1), await fetchItem(2), await fetchItem(3) tuần tự",
+        "Lưu kết quả vào các biến, rồi return list",
+        "Sequential = đợi từng cái xong mới gọi cái tiếp"
+      ],
+      "expectedConcepts": ["async", "await", "sequencing", "list"],
+      "commonMistakes": [
+        {
+          "id": "ASYNC_NOT_AWAITED",
+          "pattern": "unawaited",
+          "explanation": "Quên await các Future calls",
+          "hint": "Mỗi fetchItem() phải có await phía trước"
+        }
+      ]
+    },
+    {
+      "id": "async-003",
+      "lessonId": "async-await",
+      "title": "Async Error Handling",
+      "conceptTags": ["async", "try_catch", "error_handling"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `safeFetch(bool shouldFail)` gọi async operation và handle errors:\n\n- Nếu shouldFail = true: operation throws Exception\n- Catch exception và return \"Error: <message>\"\n- Nếu success: return \"Success\"\n\nSử dụng try-catch để handle errors.",
+      "starterCode": "Future<String> riskyOperation(bool shouldFail) async {\n  await Future.delayed(Duration(milliseconds: 100));\n  if (shouldFail) {\n    throw Exception('Operation failed');\n  }\n  return 'Success';\n}\n\nFuture<String> safeFetch(bool shouldFail) async {\n  // TODO: Call riskyOperation with try-catch\n  return '';\n}\n\nvoid main() async {\n  print(await safeFetch(false));  // Success\n  print(await safeFetch(true));   // Error: Exception: Operation failed\n}",
+      "testCode": "import 'package:test/test.dart';\n\nFuture<String> riskyOperation(bool shouldFail) async {\n  await Future.delayed(Duration(milliseconds: 50));\n  if (shouldFail) {\n    throw Exception('Operation failed');\n  }\n  return 'Success';\n}\n\nvoid main() {\n  test('Success case', () async {\n    final result = await safeFetch(false);\n    expect(result, equals('Success'));\n  });\n\n  test('Error case returns error message', () async {\n    final result = await safeFetch(true);\n    expect(result, startsWith('Error:'));\n    expect(result, contains('Operation failed'));\n  });\n}",
+      "solutionCode": "Future<String> riskyOperation(bool shouldFail) async {\n  await Future.delayed(Duration(milliseconds: 100));\n  if (shouldFail) {\n    throw Exception('Operation failed');\n  }\n  return 'Success';\n}\n\nFuture<String> safeFetch(bool shouldFail) async {\n  try {\n    return await riskyOperation(shouldFail);\n  } catch (e) {\n    return 'Error: $e';\n  }\n}\n\nvoid main() async {\n  print(await safeFetch(false));\n  print(await safeFetch(true));\n}",
+      "hints": [
+        "Sử dụng try-catch block",
+        "await riskyOperation(shouldFail) trong try block",
+        "catch (e) để bắt exception",
+        "Return 'Error: $e' trong catch block"
+      ],
+      "expectedConcepts": ["async", "try_catch", "exception_handling"],
+      "commonMistakes": [
+        {
+          "id": "EXCEPTION_NOT_HANDLED",
+          "pattern": "Exception",
+          "explanation": "Exception không được catch",
+          "hint": "Wrap await riskyOperation() trong try-catch block"
+        }
+      ]
+    }
+  ]
+}

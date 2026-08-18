@@ -1,0 +1,95 @@
+{
+  "id": "functions-null-safety",
+  "title": "Functions + Null Safety",
+  "description": "Học về parameters, return types, null safety với ?, ?., và ??",
+  "objectives": [
+    "Viết functions với parameters và return types",
+    "Hiểu nullable types (Type?)",
+    "Sử dụng null-aware operators (?., ??)",
+    "Xử lý null safely"
+  ],
+  "prerequisites": ["basics", "control-flow"],
+  "exercises": [
+    {
+      "id": "functions-null-001",
+      "lessonId": "functions-null-safety",
+      "title": "Get Length Safely",
+      "conceptTags": ["null_safety", "nullable", "functions"],
+      "difficulty": "beginner",
+      "instructions": "Viết function `getLength(String? text)` trả về độ dài của string:\n\n- Nếu text là null: trả về 0\n- Ngược lại: trả về text.length\n\nVí dụ:\n- `getLength('Hello')` → `5`\n- `getLength(null)` → `0`\n- `getLength('')` → `0`",
+      "starterCode": "int getLength(String? text) {\n  // TODO: Implement safely\n  return 0;\n}\n\nvoid main() {\n  print(getLength('Hello'));  // 5\n  print(getLength(null));     // 0\n  print(getLength(''));       // 0\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Non-null strings', () {\n    expect(getLength('Hello'), equals(5));\n    expect(getLength('Dart'), equals(4));\n  });\n\n  test('Null returns 0', () {\n    expect(getLength(null), equals(0));\n  });\n\n  test('Empty string', () {\n    expect(getLength(''), equals(0));\n  });\n}",
+      "solutionCode": "int getLength(String? text) {\n  return text?.length ?? 0;\n}\n\nvoid main() {\n  print(getLength('Hello'));\n  print(getLength(null));\n  print(getLength(''));\n}",
+      "hints": [
+        "Sử dụng ?. (null-aware access) để gọi .length an toàn",
+        "Sử dụng ?? (null coalescing) để cung cấp default value",
+        "Cú pháp: text?.length ?? 0"
+      ],
+      "expectedConcepts": ["null_safety", "null_aware_operator", "nullable_type"],
+      "commonMistakes": [
+        {
+          "id": "NULLABLE_ACCESS",
+          "pattern": "can't be used on a nullable",
+          "explanation": "Đang truy cập .length trực tiếp trên nullable type",
+          "hint": "Dùng ?. thay vì . khi access property của nullable type"
+        }
+      ]
+    },
+    {
+      "id": "functions-null-002",
+      "lessonId": "functions-null-safety",
+      "title": "Safe First Character",
+      "conceptTags": ["null_safety", "string", "indexing"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `firstChar(String? text)` trả về ký tự đầu tiên:\n\n- Nếu text là null hoặc empty: trả về null\n- Ngược lại: trả về ký tự đầu tiên\n\nVí dụ:\n- `firstChar('Hello')` → `'H'`\n- `firstChar(null)` → `null`\n- `firstChar('')` → `null`",
+      "starterCode": "String? firstChar(String? text) {\n  // TODO: Implement\n  return null;\n}\n\nvoid main() {\n  print(firstChar('Hello'));  // H\n  print(firstChar(null));     // null\n  print(firstChar(''));       // null\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Non-empty strings', () {\n    expect(firstChar('Hello'), equals('H'));\n    expect(firstChar('Dart'), equals('D'));\n    expect(firstChar('A'), equals('A'));\n  });\n\n  test('Null returns null', () {\n    expect(firstChar(null), isNull);\n  });\n\n  test('Empty string returns null', () {\n    expect(firstChar(''), isNull);\n  });\n}",
+      "solutionCode": "String? firstChar(String? text) {\n  if (text == null || text.isEmpty) {\n    return null;\n  }\n  return text[0];\n}\n\nvoid main() {\n  print(firstChar('Hello'));\n  print(firstChar(null));\n  print(firstChar(''));\n}",
+      "hints": [
+        "Kiểm tra text == null hoặc text.isEmpty trước",
+        "Nếu valid, trả về text[0] (ký tự đầu tiên)",
+        "Return type là String? (nullable) vì có thể return null"
+      ],
+      "expectedConcepts": ["null_check", "string_indexing", "nullable_return"],
+      "commonMistakes": [
+        {
+          "id": "NULLABLE_ACCESS",
+          "pattern": "can't be used",
+          "explanation": "Truy cập text mà chưa kiểm tra null",
+          "hint": "Kiểm tra if (text == null || text.isEmpty) trước khi access text[0]"
+        },
+        {
+          "id": "OFF_BY_ONE",
+          "pattern": "RangeError",
+          "explanation": "Truy cập index trên empty string",
+          "hint": "Phải check text.isEmpty trước khi access text[0]"
+        }
+      ]
+    },
+    {
+      "id": "functions-null-003",
+      "lessonId": "functions-null-safety",
+      "title": "Parse Integer Safely",
+      "conceptTags": ["null_safety", "parsing", "error_handling"],
+      "difficulty": "intermediate",
+      "instructions": "Viết function `parseIntSafe(String? text)` parse string thành int:\n\n- Nếu text là null: trả về null\n- Nếu parse thành công: trả về int\n- Nếu parse fail: trả về null\n\nVí dụ:\n- `parseIntSafe('123')` → `123`\n- `parseIntSafe(null)` → `null`\n- `parseIntSafe('abc')` → `null`",
+      "starterCode": "int? parseIntSafe(String? text) {\n  // TODO: Implement\n  return null;\n}\n\nvoid main() {\n  print(parseIntSafe('123'));   // 123\n  print(parseIntSafe(null));    // null\n  print(parseIntSafe('abc'));   // null\n}",
+      "testCode": "import 'package:test/test.dart';\n\nvoid main() {\n  test('Valid integers', () {\n    expect(parseIntSafe('123'), equals(123));\n    expect(parseIntSafe('0'), equals(0));\n    expect(parseIntSafe('-42'), equals(-42));\n  });\n\n  test('Null input', () {\n    expect(parseIntSafe(null), isNull);\n  });\n\n  test('Invalid strings', () {\n    expect(parseIntSafe('abc'), isNull);\n    expect(parseIntSafe('12.5'), isNull);\n    expect(parseIntSafe(''), isNull);\n  });\n}",
+      "solutionCode": "int? parseIntSafe(String? text) {\n  if (text == null) {\n    return null;\n  }\n  \n  return int.tryParse(text);\n}\n\nvoid main() {\n  print(parseIntSafe('123'));\n  print(parseIntSafe(null));\n  print(parseIntSafe('abc'));\n}",
+      "hints": [
+        "Kiểm tra text == null trước",
+        "Sử dụng int.tryParse(text) thay vì int.parse(text)",
+        "tryParse trả về null nếu parse fail, không throw exception"
+      ],
+      "expectedConcepts": ["null_safety", "try_parse", "nullable_return"],
+      "commonMistakes": [
+        {
+          "id": "EXCEPTION_NOT_HANDLED",
+          "pattern": "FormatException",
+          "explanation": "Đang dùng int.parse() thay vì int.tryParse()",
+          "hint": "Dùng int.tryParse() để tránh exception khi string không hợp lệ"
+        }
+      ]
+    }
+  ]
+}
