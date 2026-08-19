@@ -1,71 +1,85 @@
-let cachedVoices: SpeechSynthesisVoice[] = [];
+const TTS_ENDPOINT = 'https://translate.google.com/translate_tts';
+const MAX_CHARS = 150;
 
-function loadVoices(): SpeechSynthesisVoice[] {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return [];
-  if (cachedVoices.length === 0) {
-    cachedVoices = window.speechSynthesis.getVoices();
-  }
-  return cachedVoices;
+let currentAudio: HTMLAudioElement | null = null;
+let cancelled = false;
+
+function buildTtsUrl(text: string): string {
+  const params = new URLSearchParams({
+    ie: 'UTF-8',
+    q: text,
+    tl: 'vi',
+    client: 'tw-ob',
+  });
+  return `${TTS_ENDPOINT}?${params.toString()}`;
 }
 
-if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = () => {
-    cachedVoices = window.speechSynthesis.getVoices();
+function chunkText(text: string): string[] {
+  const cleaned = text.replace(/\s+/g, ' ').trim();
+  if (cleaned.length === 0) return [];
+  const sentences = cleaned.split(/(?<=[.!?])\s+/);
+  const chunks: string[] = [];
+  let buffer = '';
+  for (const sentence of sentences) {
+    const candidate = buffer ? `${buffer} ${sentence}` : sentence;
+    if (candidate.length > MAX_CHARS) {
+      if (buffer) chunks.push(buffer);
+      buffer = sentence;
+    } else {
+      buffer = candidate;
+    }
+  }
+  if (buffer) chunks.push(buffer);
+  return chunks;
+}
+
+function playChunk(url: string, rate: number): Promise<void> {
+  return new Promise((resolve) => {
+    const audio = new Audio();
+    audio.src = url;
+    audio.playbackRate = rate;
+    currentAudio = audio;
+    audio.addEventListener('ended', () => resolve(), { once: true });
+    audio.addEventListener('error', () => resolve(), { once: true });
+    audio.play().catch(() => resolve());
+  });
+}
+
+export function speakText(text: string, onEnd?: () => void, rate = 0.75) {
+  if (typeof window === 'undefined') return;
+  window.speechSynthesis?.cancel();
+  stopSpeaking();
+  cancelled = false;
+  const chunks = chunkText(text);
+  const playSequence = async () => {
+    for (const chunk of chunks) {
+      if (cancelled) break;
+      await playChunk(buildTtsUrl(chunk), rate);
+      if (cancelled) break;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    onEnd?.();
   };
-}
-
-const VOICE_STORAGE_KEY = 'dart-tutor-tts-voice';
-
-function isVietnameseVoice(voice: SpeechSynthesisVoice): boolean {
-  const lang = voice.lang.toLowerCase();
-  return lang.startsWith('vi') || lang.includes('vi-vn');
-}
-
-function voiceQualityScore(voice: SpeechSynthesisVoice): number {
-  const name = voice.name.toLowerCase();
-  let score = 0;
-  if (/natural|online|neural|enhanced/.test(name)) score += 10;
-  if (name.includes('google')) score += 5;
-  if (voice.localService) score -= 3;
-  if (/espeak|pico|festival|mimic/.test(name)) score -= 8;
-  return score;
-}
-
-export function listVietnameseVoices(): SpeechSynthesisVoice[] {
-  return loadVoices()
-    .filter(isVietnameseVoice)
-    .sort((a, b) => voiceQualityScore(b) - voiceQualityScore(a) || a.name.localeCompare(b.name));
-}
-
-export function pickVietnameseVoice(): SpeechSynthesisVoice | null {
-  const voices = listVietnameseVoices();
-  if (voices.length === 0) return null;
-  const savedName = window.localStorage.getItem(VOICE_STORAGE_KEY);
-  return voices.find((v) => v.name === savedName) ?? voices[0] ?? null;
-}
-
-export function saveVoicePreference(name: string) {
-  window.localStorage.setItem(VOICE_STORAGE_KEY, name);
-}
-
-export function speakText(text: string, onEnd?: () => void, rate = 1) {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'vi-VN';
-  const voice = pickVietnameseVoice();
-  if (voice) {
-    utterance.voice = voice;
-  }
-  utterance.rate = rate;
-  if (onEnd) {
-    utterance.onend = () => onEnd();
-    utterance.onerror = () => onEnd();
-  }
-  window.speechSynthesis.speak(utterance);
+  void playSequence();
 }
 
 export function stopSpeaking() {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
+  cancelled = true;
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+    currentAudio = null;
+  }
+}
+
+export function listVietnameseVoices(): SpeechSynthesisVoice[] {
+  return [];
+}
+
+export function pickVietnameseVoice(): SpeechSynthesisVoice | null {
+  return null;
+}
+
+export function saveVoicePreference(_name: string) {
+  // no-op: gTTS has a single fixed Vietnamese voice
 }
