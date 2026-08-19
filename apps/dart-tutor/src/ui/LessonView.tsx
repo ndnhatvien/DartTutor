@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import type { Lesson } from '../content/types';
 import DartPadEmbed from './DartPadEmbed';
 
@@ -6,6 +6,72 @@ interface LessonViewProps {
   lesson: Lesson;
   onBack: () => void;
   onStartExercises: () => void;
+}
+
+const codeChipStyle: React.CSSProperties = {
+  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+  fontSize: '0.8em',
+  backgroundColor: '#eef2f7',
+  color: '#be185d',
+  padding: '0.15rem 0.35rem',
+  borderRadius: '4px',
+  border: '1px solid #e2e8f0',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-word',
+};
+
+function renderInlineText(text: string) {
+  const parts = text.split('`');
+  return parts.map((part, idx) =>
+    idx % 2 === 1 ? (
+      <code key={`code-${idx}-${part.slice(0, 20)}`} style={codeChipStyle}>
+        {part}
+      </code>
+    ) : (
+      <Fragment key={`text-${idx}-${part.slice(0, 20)}`}>{part}</Fragment>
+    )
+  );
+}
+
+function renderTheoryParagraph(paragraph: string) {
+  const trimmed = paragraph.trim();
+  if (trimmed.startsWith('```')) {
+    const code = trimmed
+      .replace(/^```(dart)?\s*/, '')
+      .replace(/```$/, '')
+      .trim();
+    return (
+      <pre
+        key={code.slice(0, 40)}
+        style={{
+          margin: '0 0 0.75rem 0',
+          padding: '1rem',
+          backgroundColor: '#1e293b',
+          color: '#e2e8f0',
+          borderRadius: '8px',
+          overflow: 'auto',
+          fontSize: '0.85rem',
+          lineHeight: '1.6',
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+        }}
+      >
+        {code}
+      </pre>
+    );
+  }
+  return (
+    <p
+      key={paragraph.slice(0, 40)}
+      style={{
+        margin: '0 0 0.5rem 0',
+        color: '#475569',
+        lineHeight: '1.7',
+        fontSize: '0.9rem',
+      }}
+    >
+      {renderInlineText(paragraph)}
+    </p>
+  );
 }
 
 export default function LessonView({ lesson, onBack, onStartExercises }: LessonViewProps) {
@@ -95,19 +161,7 @@ export default function LessonView({ lesson, onBack, onStartExercises }: LessonV
                 }}
               >
                 <h4 style={{ margin: '0 0 0.5rem 0', color: '#1e293b' }}>{section.title}</h4>
-                {section.content.map((paragraph) => (
-                  <p
-                    key={paragraph.slice(0, 40)}
-                    style={{
-                      margin: '0 0 0.5rem 0',
-                      color: '#475569',
-                      lineHeight: '1.7',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {paragraph}
-                  </p>
-                ))}
+                {section.content.map((paragraph) => renderTheoryParagraph(paragraph))}
               </div>
             ))}
           </section>
