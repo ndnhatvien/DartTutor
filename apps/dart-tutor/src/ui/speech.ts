@@ -24,7 +24,7 @@ export function pickVietnameseVoice(): SpeechSynthesisVoice | null {
   );
 }
 
-export function speakText(text: string, onEnd?: () => void) {
+export function speakText(text: string, onEnd?: () => void, rate = 1) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
@@ -33,7 +33,7 @@ export function speakText(text: string, onEnd?: () => void) {
   if (voice) {
     utterance.voice = voice;
   }
-  utterance.rate = 1;
+  utterance.rate = rate;
   if (onEnd) {
     utterance.onend = () => onEnd();
     utterance.onerror = () => onEnd();

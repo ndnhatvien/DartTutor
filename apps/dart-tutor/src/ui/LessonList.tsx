@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react';
 import type { Lesson, LessonProgress } from '../content/types';
+import { DartIcon, FlutterIcon } from './BrandIcons';
 
 interface LessonListProps {
   lessons: Lesson[];
@@ -97,7 +99,7 @@ function LessonSection({
   onSelectLesson,
 }: {
   title: string;
-  icon: string;
+  icon: ReactNode;
   color: string;
   lessons: Lesson[];
   progress: Map<string, LessonProgress>;
@@ -124,7 +126,7 @@ function LessonSection({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '1.5rem' }}>{icon}</span>
+          {icon}
           <h2 style={{ margin: 0, color: '#1e293b', fontSize: '1.25rem' }}>{title}</h2>
           <span
             style={{
@@ -177,7 +179,7 @@ export default function LessonList({ lessons, progress, onSelectLesson }: Lesson
     <div style={{ padding: '2rem' }}>
       <LessonSection
         title="Dart"
-        icon="🎯"
+        icon={<DartIcon />}
         color="#0175C2"
         lessons={dartLessons}
         progress={progress}
@@ -185,7 +187,7 @@ export default function LessonList({ lessons, progress, onSelectLesson }: Lesson
       />
       <LessonSection
         title="Flutter"
-        icon="💙"
+        icon={<FlutterIcon />}
         color="#02569B"
         lessons={flutterLessons}
         progress={progress}

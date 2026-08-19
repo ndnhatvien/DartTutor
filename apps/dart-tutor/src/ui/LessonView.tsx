@@ -9,8 +9,11 @@ interface LessonViewProps {
   onStartExercises: () => void;
 }
 
+const SPEED_OPTIONS = [0.75, 1, 1.25];
+
 function SpeakButton({ text }: { text: string }) {
   const [speaking, setSpeaking] = useState(false);
+  const [rate, setRate] = useState(0.75);
 
   const toggle = () => {
     if (speaking) {
@@ -18,29 +21,51 @@ function SpeakButton({ text }: { text: string }) {
       setSpeaking(false);
       return;
     }
-    speakText(text, () => setSpeaking(false));
+    speakText(text, () => setSpeaking(false), rate);
     setSpeaking(true);
   };
 
   return (
-    <button
-      onClick={toggle}
-      style={{
-        background: speaking ? '#fef3c7' : 'none',
-        border: '1px solid #e2e8f0',
-        borderRadius: '6px',
-        padding: '0.3rem 0.6rem',
-        cursor: 'pointer',
-        fontSize: '0.8rem',
-        color: speaking ? '#92400e' : '#64748b',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.3rem',
-      }}
-      type="button"
-    >
-      {speaking ? '⏹ Dừng' : '🔊 Nghe đọc'}
-    </button>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+      <select
+        value={rate}
+        onChange={(e) => setRate(Number(e.target.value))}
+        style={{
+          border: '1px solid #e2e8f0',
+          borderRadius: '6px',
+          padding: '0.3rem 0.4rem',
+          fontSize: '0.75rem',
+          color: '#64748b',
+          background: 'white',
+          cursor: 'pointer',
+        }}
+        aria-label="Tốc độ đọc"
+      >
+        {SPEED_OPTIONS.map((speed) => (
+          <option key={speed} value={speed}>
+            {speed}x
+          </option>
+        ))}
+      </select>
+      <button
+        onClick={toggle}
+        style={{
+          background: speaking ? '#fef3c7' : 'none',
+          border: '1px solid #e2e8f0',
+          borderRadius: '6px',
+          padding: '0.3rem 0.6rem',
+          cursor: 'pointer',
+          fontSize: '0.8rem',
+          color: speaking ? '#92400e' : '#64748b',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.3rem',
+        }}
+        type="button"
+      >
+        {speaking ? '⏹ Dừng' : '🔊 Nghe đọc'}
+      </button>
+    </div>
   );
 }
 
