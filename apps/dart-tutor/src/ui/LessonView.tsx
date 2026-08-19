@@ -23,7 +23,7 @@ const selectStyle = {
 
 function SpeakButton({ text }: { text: string }) {
   const [speaking, setSpeaking] = useState(false);
-  const [rate, setRate] = useState(0.75);
+  const [rate, setRate] = useState(1);
 
   const toggle = () => {
     if (speaking) {

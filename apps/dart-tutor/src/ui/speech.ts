@@ -16,8 +16,18 @@ function buildTtsUrl(text: string): string {
   return `${TTS_ENDPOINT}?${params.toString()}`;
 }
 
+function sanitizeForSpeech(text: string): string {
+  return text
+    .replace(/```(dart)?\s*/g, ' ')
+    .replace(/`/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function chunkText(text: string): string[] {
-  const cleaned = text.replace(/\s+/g, ' ').trim();
+  const cleaned = sanitizeForSpeech(text);
   if (cleaned.length === 0) return [];
   const sentences = cleaned.split(/(?<=[.!?])\s+/);
   const chunks: string[] = [];
@@ -56,9 +66,8 @@ async function playChunkWithRetry(url: string, rate: number): Promise<void> {
   }
 }
 
-export function speakText(text: string, onEnd?: () => void, rate = 0.75) {
+export function speakText(text: string, onEnd?: () => void, rate = 1) {
   if (typeof window === 'undefined') return;
-  window.speechSynthesis?.cancel();
   stopSpeaking();
   cancelled = false;
   const chunks = chunkText(text);
