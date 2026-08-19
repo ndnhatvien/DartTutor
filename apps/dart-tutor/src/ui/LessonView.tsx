@@ -1,11 +1,47 @@
 import { Fragment, useState } from 'react';
 import type { Lesson } from '../content/types';
 import DartPadEmbed from './DartPadEmbed';
+import { speakText, stopSpeaking } from './speech';
 
 interface LessonViewProps {
   lesson: Lesson;
   onBack: () => void;
   onStartExercises: () => void;
+}
+
+function SpeakButton({ text }: { text: string }) {
+  const [speaking, setSpeaking] = useState(false);
+
+  const toggle = () => {
+    if (speaking) {
+      stopSpeaking();
+      setSpeaking(false);
+      return;
+    }
+    speakText(text, () => setSpeaking(false));
+    setSpeaking(true);
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      style={{
+        background: speaking ? '#fef3c7' : 'none',
+        border: '1px solid #e2e8f0',
+        borderRadius: '6px',
+        padding: '0.3rem 0.6rem',
+        cursor: 'pointer',
+        fontSize: '0.8rem',
+        color: speaking ? '#92400e' : '#64748b',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.3rem',
+      }}
+      type="button"
+    >
+      {speaking ? '⏹ Dừng' : '🔊 Nghe đọc'}
+    </button>
+  );
 }
 
 const codeChipStyle: React.CSSProperties = {
@@ -160,7 +196,19 @@ export default function LessonView({ lesson, onBack, onStartExercises }: LessonV
                   marginBottom: '1rem',
                 }}
               >
-                <h4 style={{ margin: '0 0 0.5rem 0', color: '#1e293b' }}>{section.title}</h4>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  <h4 style={{ margin: 0, color: '#1e293b' }}>{section.title}</h4>
+                  <SpeakButton
+                    text={section.content.filter((c) => !c.trim().startsWith('```')).join('. ')}
+                  />
+                </div>
                 {section.content.map((paragraph) => renderTheoryParagraph(paragraph))}
               </div>
             ))}
@@ -195,7 +243,7 @@ export default function LessonView({ lesson, onBack, onStartExercises }: LessonV
 
           {selectedExample && (
             <>
-              <p
+              <div
                 style={{
                   margin: '0 0 1rem 0',
                   padding: '0.75rem 1rem',
@@ -204,10 +252,15 @@ export default function LessonView({ lesson, onBack, onStartExercises }: LessonV
                   borderRadius: '6px',
                   color: '#1e3a8a',
                   fontSize: '0.9rem',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '0.5rem',
                 }}
               >
-                {selectedExample.description}
-              </p>
+                <span>{selectedExample.description}</span>
+                <SpeakButton text={selectedExample.description} />
+              </div>
               <DartPadEmbed
                 initialCode={selectedExample.code}
                 externalCode={selectedExample.code}
