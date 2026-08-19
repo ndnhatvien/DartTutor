@@ -14,14 +14,38 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   };
 }
 
+const VOICE_STORAGE_KEY = 'dart-tutor-tts-voice';
+
+function isVietnameseVoice(voice: SpeechSynthesisVoice): boolean {
+  const lang = voice.lang.toLowerCase();
+  return lang.startsWith('vi') || lang.includes('vi-vn');
+}
+
+function voiceQualityScore(voice: SpeechSynthesisVoice): number {
+  const name = voice.name.toLowerCase();
+  let score = 0;
+  if (/natural|online|neural|enhanced/.test(name)) score += 10;
+  if (name.includes('google')) score += 5;
+  if (voice.localService) score -= 3;
+  if (/espeak|pico|festival|mimic/.test(name)) score -= 8;
+  return score;
+}
+
+export function listVietnameseVoices(): SpeechSynthesisVoice[] {
+  return loadVoices()
+    .filter(isVietnameseVoice)
+    .sort((a, b) => voiceQualityScore(b) - voiceQualityScore(a) || a.name.localeCompare(b.name));
+}
+
 export function pickVietnameseVoice(): SpeechSynthesisVoice | null {
-  const voices = loadVoices();
+  const voices = listVietnameseVoices();
   if (voices.length === 0) return null;
-  return (
-    voices.find((v) => v.lang.toLowerCase().startsWith('vi')) ??
-    voices.find((v) => v.lang.toLowerCase().includes('vi-vn')) ??
-    null
-  );
+  const savedName = window.localStorage.getItem(VOICE_STORAGE_KEY);
+  return voices.find((v) => v.name === savedName) ?? voices[0] ?? null;
+}
+
+export function saveVoicePreference(name: string) {
+  window.localStorage.setItem(VOICE_STORAGE_KEY, name);
 }
 
 export function speakText(text: string, onEnd?: () => void, rate = 1) {

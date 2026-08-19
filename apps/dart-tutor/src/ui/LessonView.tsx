@@ -1,7 +1,13 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type { Lesson } from '../content/types';
 import DartPadEmbed from './DartPadEmbed';
-import { speakText, stopSpeaking } from './speech';
+import {
+  listVietnameseVoices,
+  pickVietnameseVoice,
+  saveVoicePreference,
+  speakText,
+  stopSpeaking,
+} from './speech';
 
 interface LessonViewProps {
   lesson: Lesson;
@@ -11,9 +17,37 @@ interface LessonViewProps {
 
 const SPEED_OPTIONS = [0.75, 1, 1.25];
 
+const selectStyle = {
+  border: '1px solid #e2e8f0',
+  borderRadius: '6px',
+  padding: '0.3rem 0.4rem',
+  fontSize: '0.75rem',
+  color: '#64748b',
+  background: 'white',
+  cursor: 'pointer',
+} as const;
+
 function SpeakButton({ text }: { text: string }) {
   const [speaking, setSpeaking] = useState(false);
   const [rate, setRate] = useState(0.75);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>(() => listVietnameseVoices());
+  const [voiceName, setVoiceName] = useState<string>(() => pickVietnameseVoice()?.name ?? '');
+
+  useEffect(() => {
+    const refresh = () => {
+      setVoices(listVietnameseVoices());
+      setVoiceName((prev) => prev || pickVietnameseVoice()?.name || '');
+    };
+    refresh();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = refresh;
+    }
+    return () => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
 
   const toggle = () => {
     if (speaking) {
@@ -27,18 +61,28 @@ function SpeakButton({ text }: { text: string }) {
 
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+      {voices.length > 1 && (
+        <select
+          value={voiceName}
+          onChange={(e) => {
+            setVoiceName(e.target.value);
+            saveVoicePreference(e.target.value);
+          }}
+          style={selectStyle}
+          aria-label="Chọn giọng đọc"
+          title="Chọn giọng đọc"
+        >
+          {voices.map((voice) => (
+            <option key={voice.name} value={voice.name}>
+              {voice.name.replace(/[_-]+/g, ' ')}
+            </option>
+          ))}
+        </select>
+      )}
       <select
         value={rate}
         onChange={(e) => setRate(Number(e.target.value))}
-        style={{
-          border: '1px solid #e2e8f0',
-          borderRadius: '6px',
-          padding: '0.3rem 0.4rem',
-          fontSize: '0.75rem',
-          color: '#64748b',
-          background: 'white',
-          cursor: 'pointer',
-        }}
+        style={selectStyle}
         aria-label="Tốc độ đọc"
       >
         {SPEED_OPTIONS.map((speed) => (
