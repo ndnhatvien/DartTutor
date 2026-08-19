@@ -9,6 +9,60 @@
     "Sequencing async operations"
   ],
   "prerequisites": ["basics", "control-flow", "functions-null-safety", "collections"],
+  "theory": [
+    {
+      "title": "Future và async/await là gì",
+      "content": [
+        "`Future` đại diện cho kết quả của một thao tác bất đồng bộ (async) có thể chưa hoàn thành ngay lập tức, như gọi API, đọc file hoặc chờ một khoảng thời gian. Ví dụ `Future<String>` hứa hẹn sẽ cho bạn một chuỗi trong tương lai.",
+        "Từ khóa `async` đánh dấu một hàm là bất đồng bộ, và hàm đó phải trả về `Future`. Từ khóa `await` tạm dừng hàm hiện tại cho đến khi Future hoàn thành, rồi lấy ra kết quả. Chỉ có thể dùng `await` bên trong hàm được khai báo `async`.",
+        "Ví dụ đơn giản: `Future<String> fetchData() async { ... }` và khi gọi `final data = await fetchData();` chương trình sẽ đợi cho đến khi `fetchData` trả về kết quả rồi mới gán vào `data`."
+      ]
+    },
+    {
+      "title": "Sử dụng Future.delayed và await",
+      "content": [
+        "`Future.delayed(Duration, () => value)` tạo ra một Future hoàn thành sau một khoảng thời gian chỉ định. Ví dụ: `Future.delayed(Duration(seconds: 1), () => 'Đã tải xong')` sẽ trả về chuỗi `'Đã tải xong'` sau 1 giây.",
+        "Khi gọi một hàm async, có hai cách để nhận kết quả. Cách thứ nhất là dùng `await` - chương trình tạm dừng, chờ Future hoàn thành rồi tiếp tục. Đây là cách dễ đọc nhất vì code trông giống code tuần tự thông thường.",
+        "Cách thứ hai là dùng `.then((value) { ... })` - đăng ký một callback chạy khi Future hoàn thành. Cách này hữu ích khi bạn không muốn chặn luồng chính, nhưng code trở nên lồng nhau và khó đọc khi có nhiều thao tác nối tiếp."
+      ]
+    },
+    {
+      "title": "Xử lý lỗi trong async code",
+      "content": [
+        "Giống code thông thường, bạn dùng `try-catch` để bắt exception trong hàm async: `try { var result = await risky(); } catch (e) { print('Lỗi: $e'); }`. Nếu Future ném lỗi, khối `catch` sẽ chạy.",
+        "Khi một Future thất bại mà không được xử lý, chương trình có thể bị sập hoặc in ra uncaught exception. Vì vậy, hãy luôn cân nhắc bọc các lời gọi `await` trong `try-catch`, đặc biệt khi gọi API hoặc đọc dữ liệu từ bên ngoài.",
+        "`Future.timeout(Duration)` rất hữu ích để giới hạn thời gian chờ: `await slow().timeout(Duration(seconds: 2));`. Nếu thao tác chạy lâu hơn thời gian quy định, `TimeoutException` sẽ được ném ra và bạn có thể bắt nó bằng `catch` để trả về giá trị mặc định."
+      ]
+    },
+    {
+      "title": "Chạy tuần tự và song song",
+      "content": [
+        "Chạy tuần tự nghĩa là chờ từng thao tác hoàn thành rồi mới bắt đầu thao tác tiếp theo: `final a = await fetch(1); final b = await fetch(2);`. Cách này đơn giản nhưng chậm nếu các thao tác độc lập với nhau.",
+        "Để chạy nhiều thao tác song song, dùng `Future.wait([...])`: `final results = await Future.wait([fetch(1), fetch(2), fetch(3)]);`. Tất cả Future được khởi chạy cùng lúc và chương trình chỉ đợi cho đến khi toàn bộ hoàn thành, kết quả là một List theo đúng thứ tự khai báo.",
+        "Hãy chọn đúng chiến lược: dùng tuần tự khi thao tác sau phụ thuộc vào kết quả của thao tác trước, dùng song song khi các thao tác độc lập và bạn muốn tiết kiệm thời gian chờ."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "async-ex1",
+      "title": "Future.delayed cơ bản",
+      "description": "Ví dụ minh họa hàm async kết hợp await với Future.delayed. Học viên chú ý main() cũng phải là async mới dùng await được.",
+      "code": "Future<String> fetchData() async {\n  print('Đang tải dữ liệu...');\n  await Future.delayed(Duration(seconds: 1));\n  return 'Dữ liệu đã tải xong';\n}\n\nvoid main() async {\n  final data = await fetchData();\n  print(data);\n}"
+    },
+    {
+      "id": "async-ex2",
+      "title": "Chạy tuần tự nhiều Future",
+      "description": "Ví dụ gọi nhiều hàm async tuần tự và gộp kết quả thành List. Học viên chú ý thứ tự kết quả theo đúng thứ tự gọi await.",
+      "code": "Future<String> fetchItem(int id) async {\n  await Future.delayed(Duration(milliseconds: 300));\n  return 'Item $id';\n}\n\nFuture<List<String>> fetchAll() async {\n  final item1 = await fetchItem(1);\n  final item2 = await fetchItem(2);\n  final item3 = await fetchItem(3);\n  return [item1, item2, item3];\n}\n\nvoid main() async {\n  final items = await fetchAll();\n  print(items);\n}"
+    },
+    {
+      "id": "async-ex3",
+      "title": "Xử lý lỗi với try-catch",
+      "description": "Ví dụ bọc lời gọi async trong try-catch và dùng timeout. Học viên chú ý chương trình vẫn tiếp tục chạy dù thao tác thất bại.",
+      "code": "Future<String> riskyOperation() async {\n  await Future.delayed(Duration(milliseconds: 200));\n  throw Exception('Kết nối thất bại');\n}\n\nFuture<String> safeCall() async {\n  try {\n    return await riskyOperation();\n  } catch (e) {\n    return 'Đã bắt lỗi: $e';\n  }\n}\n\nvoid main() async {\n  final result = await safeCall();\n  print(result);\n  print('Chương trình vẫn tiếp tục chạy');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "async-001",

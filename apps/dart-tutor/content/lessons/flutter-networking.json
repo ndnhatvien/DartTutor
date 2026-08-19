@@ -8,6 +8,60 @@
     "Xử lý error và retry logic"
   ],
   "prerequisites": ["async-await", "flutter-basics"],
+  "theory": [
+    {
+      "title": "JSON và quy trình serialize/deserialize",
+      "content": [
+        "Trong Flutter, dữ liệu từ server luôn đến dưới dạng chuỗi JSON. Dart cung cấp hàm `jsonEncode()` để chuyển object thành chuỗi và `jsonDecode()` để chuyển chuỗi thành `Map<String, dynamic>` hoặc `List`.",
+        "`jsonDecode` trả về các kiểu cơ bản: `Map`, `List`, `String`, `num`, `bool`, `null`. Điều quan trọng là các giá trị trong `Map` có kiểu `dynamic`, nên khi đọc bạn phải ép kiểu rõ ràng (ví dụ `as int`, `as String`) để tránh lỗi type lúc runtime.",
+        "Các bài tập trong phần này mô phỏng việc parse JSON bằng các class `User`, `ApiResponse`, `UrlBuilder` thuần Dart: bạn vẫn làm việc với `Map<String, dynamic>` giống hệt dữ liệu thật mà `jsonDecode` trả về."
+      ]
+    },
+    {
+      "title": "Model classes với fromJson và toJson",
+      "content": [
+        "Pattern chuẩn cho một model trong Flutter là khai báo `factory User.fromJson(Map<String, dynamic> json)` để tạo object từ dữ liệu thô, và `Map<String, dynamic> toJson()` để xuất ngược lại khi gửi lên server.",
+        "Với các trường có thể vắng mặt, hãy dùng `json['is_active'] as bool? ?? true` — ép kiểu nullable rồi cung cấp giá trị mặc định. Toán tử `??` (null coalescing) giúp tránh crash khi server bỏ sót field.",
+        "Phương thức `copyWith()` giúp tạo một bản sao chỉ với vài trường thay đổi mà không sửa object gốc — rất hữu ích khi cập nhật UI sau khi nhận dữ liệu mới từ API."
+      ]
+    },
+    {
+      "title": "HTTP requests và async/await trong Flutter",
+      "content": [
+        "Để gọi API trong Flutter, bạn dùng package `http` hoặc `dio`. Hàm `http.get(url)` trả về `Future<Response>`, và bạn dùng `await` trong một hàm `async` để đợi kết quả, rồi đọc `response.statusCode` và `response.body`.",
+        "Một response HTTP có status code: 2xx là thành công, 4xx là lỗi phía client, 5xx là lỗi phía server. App nên phân nhánh theo status và parse body thành model khi thành công, nếu thất bại thì thông báo lỗi cho người dùng.",
+        "DartPad không hỗ trợ async nên bài tập mô phỏng bằng class `ApiResponse<T>` (chứa data, total, page, error) và `RetryClient` (dùng `fetchSync` thay cho `Future`). Những class này phản ánh đúng cấu trúc bạn sẽ gặp khi viết code networking thật."
+      ]
+    },
+    {
+      "title": "Xử lý lỗi, retry và rate limit",
+      "content": [
+        "Mạng không phải lúc nào cũng ổn định: timeout, kết nối chập chờn. Chiến lược phổ biến là retry với exponential backoff — mỗi lần thất bại, tăng gấp đôi thời gian chờ trước lần thử kế tiếp (100ms → 200ms → 400ms).",
+        "Ngoài retry, các API public thường có rate limit: cho phép tối đa N request trong một khoảng thời gian (ví dụ 60 request/phút). Client nên đếm số request đã gửi và từ chối khi vượt hạn mức để không bị chặn.",
+        "Bài tập mô phỏng hai ý tưởng này bằng `RetryClient` (đếm số attempts và quyết định khi nào trả fallback response) và `RateLimiter` (theo dõi timestamps trong sliding window để chấp nhận hoặc từ chối request)."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-networking-ex1",
+      "title": "Parse JSON thành model User",
+      "description": "Mô phỏng vòng đời JSON: jsonDecode chuỗi thô thành Map, dùng factory fromJson để tạo User, rồi jsonEncode qua toJson khi gửi lên server. Chú ý cách cast kiểu và giá trị mặc định cho is_active.",
+      "code": "import 'dart:convert';\n\nclass User {\n  final int id;\n  final String name;\n  final String email;\n  final bool isActive;\n\n  User({\n    required this.id,\n    required this.name,\n    required this.email,\n    this.isActive = true,\n  });\n\n  factory User.fromJson(Map<String, dynamic> json) {\n    return User(\n      id: json['id'] as int,\n      name: json['name'] as String,\n      email: json['email'] as String,\n      isActive: json['is_active'] as bool? ?? true,\n    );\n  }\n\n  Map<String, dynamic> toJson() {\n    return {\n      'id': id,\n      'name': name,\n      'email': email,\n      'is_active': isActive,\n    };\n  }\n\n  String describe() => 'User($id, $name, $email, active=$isActive)';\n}\n\nvoid main() {\n  final rawJson = '{\"id\": 1, \"name\": \"Nguyễn Văn A\", \"email\": \"a@example.com\"}';\n  final decoded = jsonDecode(rawJson) as Map<String, dynamic>;\n  print('Sau jsonDecode: $decoded');\n\n  final user = User.fromJson(decoded);\n  print(user.describe());\n\n  final encoded = jsonEncode(user.toJson());\n  print('Sau jsonEncode: $encoded');\n}"
+    },
+    {
+      "id": "flutter-networking-ex2",
+      "title": "Đóng gói phản hồi API phân trang",
+      "description": "Dùng ApiResponse để bọc dữ liệu trả về cùng thông tin phân trang và trạng thái lỗi. Hãy chú ý cách hasMore và totalPages được tính từ page, pageSize và total.",
+      "code": "class ApiResponse<T> {\n  final List<T> data;\n  final int total;\n  final int page;\n  final int pageSize;\n  final String? error;\n\n  ApiResponse({\n    required this.data,\n    required this.total,\n    required this.page,\n    this.pageSize = 10,\n    this.error,\n  });\n\n  bool get isSuccess => error == null;\n  bool get hasMore => page * pageSize < total;\n  int get totalPages => (total / pageSize).ceil();\n\n  ApiResponse<T> nextPage() {\n    return ApiResponse(\n      data: data,\n      total: total,\n      page: page + 1,\n      pageSize: pageSize,\n      error: error,\n    );\n  }\n\n  String describe() {\n    return 'Trang $page/$totalPages, ${data.length}/$total mục, thành công=$isSuccess';\n  }\n}\n\nvoid main() {\n  final res = ApiResponse(data: [1, 2, 3], total: 25, page: 1, pageSize: 10);\n  print(res.describe());\n  print('Còn trang sau: ${res.hasMore}');\n\n  final page2 = res.nextPage();\n  print(page2.describe());\n  print('Còn trang sau: ${page2.hasMore}');\n\n  final fail = ApiResponse<int>(data: [], total: 0, page: 1, error: 'Không tìm thấy');\n  print(fail.describe());\n}"
+    },
+    {
+      "id": "flutter-networking-ex3",
+      "title": "Client có retry và backoff",
+      "description": "Mô phỏng HTTP retry với exponential backoff: đếm số attempts, throw lỗi khi chưa hết số lần thử và trả fallback khi đã vượt ngưỡng. getRetryDelays cho thấy delay tăng gấp đôi mỗi lần.",
+      "code": "class RetryClient {\n  final int maxRetries;\n  final int baseDelayMs;\n  final double backoffMultiplier;\n  int _attempts = 0;\n\n  RetryClient({\n    this.maxRetries = 3,\n    this.baseDelayMs = 100,\n    this.backoffMultiplier = 2.0,\n  });\n\n  List<int> getRetryDelays() {\n    final delays = <int>[];\n    var delay = baseDelayMs;\n    for (int i = 0; i < maxRetries; i++) {\n      delays.add(delay);\n      delay = (delay * backoffMultiplier).toInt();\n    }\n    return delays;\n  }\n\n  String fetchSync(String url) {\n    _attempts++;\n    if (url.contains('fail')) {\n      if (_attempts <= maxRetries) {\n        throw Exception('Network error');\n      }\n      return 'fallback response';\n    }\n    return 'Response from $url';\n  }\n\n  int get totalAttempts => _attempts;\n}\n\nvoid main() {\n  final client = RetryClient(maxRetries: 3, baseDelayMs: 100);\n  print('Delay giữa các lần retry: ${client.getRetryDelays()}');\n\n  final ok = client.fetchSync('https://api.example.com/ok');\n  print('Kết quả ok: $ok');\n\n  for (int i = 1; i <= 4; i++) {\n    try {\n      final r = client.fetchSync('https://api.example.com/fail');\n      print('Lần $i: $r (số attempts=${client.totalAttempts})');\n    } catch (e) {\n      print('Lần $i: lỗi ($e) (số attempts=${client.totalAttempts})');\n    }\n  }\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-net-001",

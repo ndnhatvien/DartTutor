@@ -8,6 +8,60 @@
     "Sử dụng curves và tween để tùy chỉnh animation"
   ],
   "prerequisites": ["flutter-state"],
+  "theory": [
+    {
+      "title": "AnimationController và vòng lặp frame",
+      "content": [
+        "Trong Flutter, `AnimationController` là trái tim của mọi animation. Nó sinh ra một giá trị `value` trong khoảng 0.0 → 1.0 và cập nhật giá trị này trong mỗi frame dựa trên `duration` bạn cấu hình. Nhờ vậy bạn không phải tự tính toán thời gian.",
+        "Controller cần một `vsync` (thường từ `TickerProviderStateMixin`) để nhận tín hiệu frame từ màn hình. Khi bạn gọi `controller.forward()` nó chạy từ 0 lên 1, `reverse()` chạy ngược lại, còn `reset()` đưa giá trị về 0.",
+        "Vì DartPad chỉ chạy Dart thuần, các bài tập mô phỏng controller bằng class `AnimController` với phương thức `tick(elapsedMs)`: bạn tự tăng `value` theo `elapsedMs / durationMs` rồi clamp về 1.0 — tái hiện đúng cách controller tiến hóa theo thời gian trong Flutter thật."
+      ]
+    },
+    {
+      "title": "Tween: biến đổi giá trị giữa hai điểm",
+      "content": [
+        "`Tween<T>` ánh xạ giá trị 0.0 → 1.0 của controller sang một khoảng giá trị bạn mong muốn. Ví dụ `Tween<double>(begin: 0, end: 300)` để chuyển một widget từ vị trí 0 sang 300 pixel. Phương thức `lerp(t)` nội suy tuyến tính giữa `begin` và `end`.",
+        "`AnimationController` thường được kết hợp với tween: controller cung cấp giá trị `t`, tween biến đổi `t` thành giá trị thực tế, và bạn dùng giá trị đó để render widget. `CurvedAnimation` chèn thêm một đường cong vào giữa để thay đổi nhịp điệu chuyển động.",
+        "Trong mô phỏng Dart, class `Tween<T extends num>` có `lerp(t)` (nội suy) và `transform(t)` (lerp sau khi clamp `t` vào [0,1]). `reverse()` đảo ngược begin/end, còn `chain()` nối hai tween liên tiếp để tạo chuỗi giá trị."
+      ]
+    },
+    {
+      "title": "Curves và easing",
+      "content": [
+        "Curves quyết định cảm giác của animation. `Curves.linear` giữ tốc độ đều; `Curves.easeIn` bắt đầu chậm rồi tăng tốc; `Curves.easeOut` nhanh ở đầu, chậm dần ở cuối; `Curves.easeInOut` chậm ở cả hai đầu. Mỗi curve đơn giản là một hàm biến đổi t → t'.",
+        "Về toán học, easeIn là t², easeOut là 1 - (1-t)², còn easeInOut ghép hai nhánh quanh điểm giữa. Tốc độ tức thời (đạo hàm của hàm curve) cho biết animation đang nhanh hay chậm tại từng thời điểm.",
+        "Bài tập mô phỏng bằng class `EasingCurve` có `apply(t)` trả về giá trị sau khi áp dụng curve và `speed(t)` trả về đạo hàm — giúp bạn hình dung chính xác cách Flutter áp dụng Curves bên trong engine."
+      ]
+    },
+    {
+      "title": "Kết hợp nhiều animation và vật lý lò xo",
+      "content": [
+        "Để chạy nhiều hiệu ứng nối tiếp nhau, Flutter hỗ trợ `TweenSequence` và `Interval` nhằm chia khoảng thời gian thành nhiều giai đoạn. Mỗi giai đoạn có begin/end và curve riêng, nối liền thành một chuỗi chuyển động mượt mà.",
+        "Ngoài ra Flutter còn có hệ vật lý lò xo (`SpringSimulation`) dùng trong pull-to-refresh và một số gesture: chuyển động theo phương trình lò xo với `stiffness`, `damping` và `mass` thay vì theo một duration cố định.",
+        "Bài tập dùng `AnimSequence` để chạy nhiều phase nối tiếp (tính `phaseProgress` và `overallProgress`) và `SpringSimulation` để mô phỏng dao động tắt dần — cả hai đều là Dart thuần tái hiện đúng các khái niệm animation của Flutter."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-animation-ex1",
+      "title": "Mô phỏng AnimationController",
+      "description": "Tái hiện cách AnimationController tăng giá trị 0.0 → 1.0 theo thời gian bằng class AnimController. Chú ý cách tick() chia elapsedMs cho durationMs và clamp giá trị khi vượt quá 1.0.",
+      "code": "class AnimController {\n  final int durationMs;\n  double value = 0.0;\n  bool isAnimating = false;\n\n  AnimController(this.durationMs);\n\n  void start() {\n    isAnimating = true;\n  }\n\n  void tick(int elapsedMs) {\n    if (!isAnimating) return;\n    value += elapsedMs / durationMs;\n    if (value >= 1.0) {\n      value = 1.0;\n      isAnimating = false;\n    }\n  }\n\n  int progress() => (value * 100).toInt();\n\n  String describe() {\n    final status = isAnimating ? 'running' : (value >= 1.0 ? 'completed' : 'idle');\n    return 'Anim(${value.toStringAsFixed(2)}, $status)';\n  }\n}\n\nvoid main() {\n  final anim = AnimController(1000);\n  anim.start();\n\n  anim.tick(250);\n  print('Sau 250ms: ${anim.describe()}, progress=${anim.progress()}%');\n\n  anim.tick(750);\n  print('Sau 1000ms: ${anim.describe()}, progress=${anim.progress()}%');\n\n  anim.tick(500);\n  print('Sau 1500ms: ${anim.describe()}, progress=${anim.progress()}%');\n  print('isAnimating: ${anim.isAnimating}');\n}"
+    },
+    {
+      "id": "flutter-animation-ex2",
+      "title": "Tween và easing curve",
+      "description": "Minh họa Tween nội suy giá trị giữa begin và end, kèm hàm easeInOut để biến đổi nhịp điệu. Hãy chú ý transform() clamp t vào [0,1] còn lerp() không clamp.",
+      "code": "class Tween<T extends num> {\n  final T begin;\n  final T end;\n\n  Tween(this.begin, this.end);\n\n  T lerp(double t) {\n    final diff = end - begin;\n    if (diff is int) {\n      return (begin + (diff * t).round()) as T;\n    }\n    return (begin + (diff * t)) as T;\n  }\n\n  T transform(double t) => lerp(t.clamp(0.0, 1.0));\n\n  Tween<T> reverse() => Tween(end, begin);\n\n  String describe() => 'Tween($begin → $end)';\n}\n\ndouble easeInOut(double t) {\n  if (t < 0.5) return 2 * t * t;\n  return 1 - (-2 * t + 2) * (-2 * t + 2) / 2;\n}\n\nvoid main() {\n  final tween = Tween(0, 100);\n  print(tween.describe());\n  print('lerp(0.0)      = ${tween.lerp(0.0)}');\n  print('lerp(0.5)      = ${tween.lerp(0.5)}');\n  print('lerp(1.0)      = ${tween.lerp(1.0)}');\n  print('transform(1.5) = ${tween.transform(1.5)}');\n\n  print('Đảo ngược: ${tween.reverse().describe()}');\n\n  for (final t in [0.0, 0.25, 0.5, 0.75, 1.0]) {\n    print('easeInOut($t) = ${easeInOut(t).toStringAsFixed(3)}');\n  }\n}"
+    },
+    {
+      "id": "flutter-animation-ex3",
+      "title": "Chuỗi animation nhiều giai đoạn",
+      "description": "Dùng AnimSequence để chạy các phase nối tiếp nhau, mỗi phase có duration riêng. Hãy chú ý cách chuyển phase khi phaseProgress đạt 1.0 và cách tính overallProgress cho toàn chuỗi.",
+      "code": "class AnimSequence {\n  final List<int> durationsMs;\n  int currentPhase = 0;\n  double phaseProgress = 0.0;\n\n  AnimSequence(this.durationsMs);\n\n  bool get isComplete =>\n      currentPhase >= durationsMs.length - 1 && phaseProgress >= 1.0;\n\n  void tick(int elapsedMs) {\n    if (isComplete || durationsMs.isEmpty) return;\n    phaseProgress += elapsedMs / durationsMs[currentPhase];\n    while (phaseProgress >= 1.0 && currentPhase < durationsMs.length - 1) {\n      phaseProgress -= 1.0;\n      currentPhase++;\n    }\n    if (phaseProgress >= 1.0) {\n      phaseProgress = 1.0;\n    }\n  }\n\n  int totalDurationMs() {\n    return durationsMs.fold(0, (sum, d) => sum + d);\n  }\n\n  double overallProgress() {\n    int elapsed = 0;\n    for (int i = 0; i < currentPhase; i++) {\n      elapsed += durationsMs[i];\n    }\n    elapsed += (phaseProgress * durationsMs[currentPhase]).toInt();\n    return elapsed / totalDurationMs();\n  }\n\n  String describe() {\n    final pp = (phaseProgress * 100).toInt();\n    final op = (overallProgress() * 100).toInt();\n    return 'Seq(phase ${currentPhase + 1}/${durationsMs.length}, $pp%, overall $op%)';\n  }\n}\n\nvoid main() {\n  final seq = AnimSequence([500, 300, 200]);\n  print('Tổng thời gian: ${seq.totalDurationMs()}ms');\n\n  seq.tick(250);\n  print(seq.describe());\n\n  seq.tick(300);\n  print(seq.describe());\n\n  seq.tick(200);\n  print(seq.describe());\n  print('Hoàn thành: ${seq.isComplete}');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-anim-001",

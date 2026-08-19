@@ -8,6 +8,61 @@
     "Áp dụng padding, margin, và sizing"
   ],
   "prerequisites": ["flutter-basics"],
+  "theory": [
+    {
+      "title": "Row và Column: bố cục theo hướng",
+      "content": [
+        "Row và Column là hai widget bố cục quan trọng nhất của Flutter. Row xếp các widget con theo chiều NGANG (trái sang phải), còn Column xếp theo chiều DỌC (trên xuống dưới). Cả hai đều là Flex widgets — chúng 'chia' không gian có sẵn cho các con của mình.",
+        "Cú pháp rất giống nhau: Row(children: [Text('A'), Text('B')]) và Column(children: [Text('A'), Text('B')]). Chỉ khác hướng sắp xếp. Khi thiết kế màn hình, bạn thường kết hợp lồng nhau: một Column lớn chứa nhiều Row con và ngược lại.",
+        "Để luyện tập với Dart thuần, chúng ta mô phỏng bằng class LayoutInfo lưu direction (horizontal/vertical) và danh sách kích thước items. Các method tính tổng (totalSize), trung bình (averageSize) giúp bạn hiểu cách Flex 'cân' không gian giữa các con."
+      ]
+    },
+    {
+      "title": "MainAxisAlignment và CrossAxisAlignment",
+      "content": [
+        "Mỗi trục bố cục có hai hướng: Main Axis là hướng chính mà Row/Column xếp con (ngang với Row, dọc với Column), còn Cross Axis vuông góc với nó (dọc với Row, ngang với Column).",
+        "mainAxisAlignment điều khiển cách các con được đặt trên trục chính: start (đầu), center (giữa), end (cuối), spaceBetween (dàn đều, không có khoảng đầu cuối), spaceAround và spaceEvenly (dàn đều có khoảng cách). crossAxisAlignment điều khiển vị trí trên trục phụ: start, center, end, stretch (kéo căng).",
+        "Ví dụ thực tế: một nút đăng nhập ở giữa màn hình là Column(mainAxisAlignment: MainAxisAlignment.center). Một hàng tiêu đề với nút quay lại bên trái và nút menu bên phải dùng Row(mainAxisAlignment: MainAxisAlignment.spaceBetween).",
+        "Trong mô phỏng Dart, các giá trị alignment được biểu diễn đơn giản bằng chuỗi ('start', 'center', 'end'...). Bạn có thể tưởng tượng: không gian trống còn lại trên trục chính được phân phối theo đúng quy tắc của từng giá trị alignment."
+      ]
+    },
+    {
+      "title": "Expanded và tỷ lệ flex",
+      "content": [
+        "Expanded cho phép một widget con 'nở ra' để chiếm phần không gian còn lại của Row/Column. Bạn có thể đưa ra tỷ lệ qua thuộc tính flex: Expanded(flex: 2, child: ...) chiếm gấp đôi Expanded(flex: 1, child: ...).",
+        "Cách tính của Flutter: tổng các flex làm mẫu số, flex của mỗi con làm tử số, rồi nhân với không gian trống. Ví dụ không gian 300 và flex [1, 2, 1] → mỗi đơn vị flex nhận 75 → kết quả [75, 150, 75].",
+        "Trong mô phỏng Dart, class FlexBox nhận availableSpace và flexValues, rồi tính kích thước thực tế cho từng con bằng đúng công thức trên. Khi chia có dư, Flutter cộng phần dư (remainder) vào con cuối cùng — mô phỏng cũng làm y hệt để đảm bảo tổng luôn khớp với không gian có sẵn."
+      ]
+    },
+    {
+      "title": "Padding, margin và bố cục responsive",
+      "content": [
+        "Padding là khoảng trống BÊN TRONG widget (đẩy nội dung ra xa viền), margin là khoảng trống BÊN NGOÀI (đẩy widget ra xa các widget khác). Trong Flutter, Container kết hợp cả hai: Container(padding: EdgeInsets.all(16), margin: EdgeInsets.all(8)).",
+        "Màn hình có nhiều kích thước khác nhau (điện thoại, máy tính bảng, desktop). Bố cục responsive dùng breakpoint để đổi số cột: dưới 600px → 1 cột, 600–1024px → 2 cột, trên 1024px → 3 cột trở lên.",
+        "Để mô phỏng, class ResponsiveGrid nhận screenWidth và tính số cột theo breakpoint. Công thức width mỗi item: (screenWidth - padding * (columns + 1)) / columns — padding xuất hiện ở cả hai bên của mỗi cột, đó là lý do nhân với (columns + 1)."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-layouts-ex1",
+      "title": "LayoutInfo mô phỏng Row/Column",
+      "description": "Class LayoutInfo lưu hướng bố cục và danh sách kích thước các item, giống cách Row/Column nhận children. Hãy chú ý cách totalSize() và averageSize() mô phỏng việc Flex chia không gian.",
+      "code": "class LayoutInfo {\n  final String direction;\n  final List<int> sizes;\n\n  LayoutInfo(this.direction, this.sizes);\n\n  int totalSize() {\n    return sizes.fold(0, (sum, size) => sum + size);\n  }\n\n  double averageSize() {\n    if (sizes.isEmpty) return 0;\n    return totalSize() / sizes.length;\n  }\n\n  String describe() {\n    return 'Direction: $direction, Items: ${sizes.length}, Total: ${totalSize()}';\n  }\n}\n\nvoid main() {\n  final row = LayoutInfo('horizontal', [100, 200, 150]);\n  final column = LayoutInfo('vertical', [50, 80]);\n\n  print(row.describe());\n  print('Average: ${row.averageSize()}');\n  print(column.describe());\n}"
+    },
+    {
+      "id": "flutter-layouts-ex2",
+      "title": "FlexBox chia không gian theo tỷ lệ",
+      "description": "Mô phỏng Expanded(flex: n) trong Row/Column: mỗi con nhận không gian theo tỷ lệ flex, phần dư cộng vào con cuối. Quan sát [1, 2, 1] với không gian 300 cho ra [75, 150, 75].",
+      "code": "class FlexBox {\n  final int availableSpace;\n  final List<int> flexValues;\n\n  FlexBox(this.availableSpace, this.flexValues);\n\n  int get _totalFlex => flexValues.fold(0, (sum, f) => sum + f);\n\n  List<int> calculateSizes() {\n    if (flexValues.isEmpty || _totalFlex == 0) return [];\n\n    final sizes = flexValues\n        .map((f) => (f * availableSpace / _totalFlex).floor())\n        .toList();\n    final allocated = sizes.fold(0, (sum, s) => sum + s);\n    final remainder = availableSpace - allocated;\n\n    if (sizes.isNotEmpty) {\n      sizes[sizes.length - 1] += remainder;\n    }\n    return sizes;\n  }\n}\n\nvoid main() {\n  final box1 = FlexBox(300, [1, 2, 1]);\n  final box2 = FlexBox(100, [1, 3]);\n\n  print('300px với flex [1, 2, 1]: ${box1.calculateSizes()}');\n  print('100px với flex [1, 3]: ${box2.calculateSizes()}');\n}"
+    },
+    {
+      "id": "flutter-layouts-ex3",
+      "title": "ResponsiveGrid theo breakpoint",
+      "description": "Mô phỏng bố cục responsive: số cột và kích thước item thay đổi theo bề rộng màn hình. Hãy chú ý cách padding xuất hiện ở cả hai bên mỗi cột trong công thức tính.",
+      "code": "class ResponsiveGrid {\n  final double screenWidth;\n\n  ResponsiveGrid(this.screenWidth);\n\n  int getColumns() {\n    if (screenWidth < 600) return 1;\n    if (screenWidth <= 1024) return 2;\n    return 3;\n  }\n\n  String getColumnsBreakpoint() {\n    if (screenWidth < 600) return 'mobile';\n    if (screenWidth <= 1024) return 'tablet';\n    return 'desktop';\n  }\n\n  double calculateItemWidth(double padding) {\n    final columns = getColumns();\n    return (screenWidth - padding * (columns + 1)) / columns;\n  }\n}\n\nvoid main() {\n  final mobile = ResponsiveGrid(400);\n  final tablet = ResponsiveGrid(800);\n  final desktop = ResponsiveGrid(1400);\n\n  for (final grid in [mobile, tablet, desktop]) {\n    final columns = grid.getColumns();\n    print('${grid.getColumnsBreakpoint()}: $columns cột, item = '\n        '${grid.calculateItemWidth(16)}px');\n  }\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-layouts-001",

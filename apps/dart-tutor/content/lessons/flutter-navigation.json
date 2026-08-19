@@ -8,6 +8,60 @@
     "Pass data giữa các màn hình"
   ],
   "prerequisites": ["flutter-basics"],
+  "theory": [
+    {
+      "title": "Navigation stack và Navigator",
+      "content": [
+        "Flutter quản lý các màn hình bằng một NGĂN XẾP (stack): màn hình nào mở sau sẽ nằm TRÊN màn hình mở trước và hiển thị ở lớp trên cùng. Khi đóng màn hình, nó được lấy ra khỏi đỉnh stack và lộ ra màn hình phía dưới.",
+        "Navigator là widget điều khiển stack này. Nó cung cấp phương thức điều hướng: push (mở màn hình mới lên đỉnh) và pop (đóng màn hình đỉnh, trở về màn hình trước). Hành vi này giống như bạn 'đè' một màn hình lên và 'gỡ' nó xuống.",
+        "Để luyện tập bằng Dart thuần, chúng ta mô phỏng stack bằng List<String> trong class NavStack: push thêm route vào cuối list (đỉnh stack), pop xóa phần tử cuối và trả về nó, current() trả về route đang hiển thị, history() trả về danh sách từ dưới lên — đúng thứ tự các màn hình đã mở."
+      ]
+    },
+    {
+      "title": "push, pop và vòng đời màn hình",
+      "content": [
+        "Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())) mở màn hình Profile và đưa nó lên đỉnh stack. Màn hình cũ vẫn tồn tại bên dưới nhưng bị che — trạng thái của nó được giữ nguyên.",
+        "Navigator.pop(context) đóng màn hình hiện tại và trả về kết quả (optional) cho màn hình phía dưới. Khi pop trên màn hình gốc đầu tiên, ứng dụng có thể thoát. Việc nắm rõ push/pop giúp tránh 'stack leak' — mở màn hình liên tục mà không đóng, làm bộ nhớ tăng không kiểm soát.",
+        "Trong mô phỏng Dart thuần, bạn sẽ thực hành đúng các thao tác này trên List: kiểm tra stack rỗng trước khi pop/current để tránh lỗi, và dùng removeLast() cho pop — không bao giờ removeAt(0) vì stack hoạt động từ cuối (đỉnh)."
+      ]
+    },
+    {
+      "title": "Named routes và router",
+      "content": [
+        "Khi ứng dụng có nhiều màn hình, hard-code Navigator.push ở mọi nơi sẽ khó bảo trì. Giải pháp: đăng ký 'named routes' — mỗi route có một tên chuỗi (ví dụ '/profile') và một builder tạo màn hình tương ứng, rồi điều hướng bằng Navigator.pushNamed(context, '/profile').",
+        "Router đóng vai trò 'bảng tra cứu': giữ một Map từ tên route đến handler/builder. Khi navigate('/profile'), nó tìm handler và gọi. Nếu không có route nào khớp, ta trả về trang 404 (page not found) — đúng như cách các web framework xử lý.",
+        "Trong mô phỏng Dart thuần, class Router lưu Map<String, Function> _routes: register() đăng ký route với handler, navigate() tra cứu rồi gọi handler (trả về '404: route' nếu không tồn tại), hasRoute() kiểm tra, routes() liệt kê toàn bộ tên route. Đây chính là mô hình routing mà Flutter sử dụng nội bộ."
+      ]
+    },
+    {
+      "title": "Truyền dữ liệu giữa các màn hình",
+      "content": [
+        "Màn hình hiếm khi hoạt động độc lập: màn hình danh sách cần truyền id sản phẩm cho màn hình chi tiết, màn hình lọc cần trả lại điều kiện lọc cho màn hình trước. Flutter truyền dữ liệu theo hai chiều: truyền VÀO qua tham số constructor (hoặc arguments), trả VỀ qua kết quả của pop().",
+        "Với route có tham số, URL dạng '/users/123?page=2&sort=name' trở thành chuẩn: phần path định danh tài nguyên, phần query params chứa các tham số phụ. Trong Flutter ta thường dùng arguments, nhưng hiểu cách parse URL giúp bạn làm việc với deep link và web.",
+        "Trong mô phỏng Dart thuần, class RouteParser minh họa chính việc này: parse() tách path và query params thành Map, build() gộp path + params thành URL, getParam() lấy nhanh một tham số. Các thao tác indexOf('?'), split('&'), split('=') đều có trong Dart thuần và dùng rất nhiều khi xử lý navigation."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-navigation-ex1",
+      "title": "NavStack mô phỏng Navigator",
+      "description": "Mô phỏng ngăn xếp màn hình của Navigator: push đưa màn hình lên đỉnh, pop gỡ xuống. Hãy chú ý các thao tác đều xử lý ở CUỐI list (đỉnh stack) chứ không phải đầu list.",
+      "code": "class NavStack {\n  final List<String> _stack = [];\n\n  void push(String route) {\n    _stack.add(route);\n  }\n\n  String? pop() {\n    if (_stack.isEmpty) return null;\n    return _stack.removeLast();\n  }\n\n  String? current() {\n    if (_stack.isEmpty) return null;\n    return _stack.last;\n  }\n\n  int length() {\n    return _stack.length;\n  }\n\n  List<String> history() {\n    return List.from(_stack);\n  }\n}\n\nvoid main() {\n  final nav = NavStack();\n  nav.push('/home');\n  nav.push('/profile');\n  nav.push('/settings');\n\n  print('Đang hiển thị: ${nav.current()}');\n  print('History: ${nav.history()}');\n\n  final popped = nav.pop();\n  print('Đã pop: $popped');\n  print('Sau pop, hiển thị: ${nav.current()}');\n  print('Lịch sử còn lại: ${nav.history()}');\n}"
+    },
+    {
+      "id": "flutter-navigation-ex2",
+      "title": "Router với named routes",
+      "description": "Mô phỏng named route routing: đăng ký route với handler trong Map, navigate tra cứu và gọi handler. Quan sát cách route không tồn tại trả về chuỗi 404.",
+      "code": "class Router {\n  final Map<String, Function> _routes = {};\n\n  void register(String route, Function handler) {\n    _routes[route] = handler;\n  }\n\n  dynamic navigate(String route) {\n    final handler = _routes[route];\n    if (handler == null) {\n      return '404: $route';\n    }\n    return handler();\n  }\n\n  bool hasRoute(String route) {\n    return _routes.containsKey(route);\n  }\n\n  List<String> routes() {\n    return _routes.keys.toList();\n  }\n}\n\nvoid main() {\n  final router = Router();\n  router.register('/home', () => 'Home Page');\n  router.register('/about', () => 'About Page');\n  router.register('/profile', () => 'Profile Page');\n\n  print(router.navigate('/home'));\n  print(router.navigate('/about'));\n  print(router.navigate('/not-exist'));\n  print('Đã đăng ký: ${router.routes()}');\n}"
+    },
+    {
+      "id": "flutter-navigation-ex3",
+      "title": "RouteParser đọc tham số URL",
+      "description": "Mô phỏng truyền dữ liệu giữa các màn hình bằng query parameters: parse tách path/params, build gộp lại thành URL, getParam lấy nhanh một tham số.",
+      "code": "class RouteParser {\n  Map<String, dynamic> parse(String url) {\n    final questionIndex = url.indexOf('?');\n    if (questionIndex == -1) {\n      return {'path': url, 'params': {}};\n    }\n\n    final path = url.substring(0, questionIndex);\n    final queryString = url.substring(questionIndex + 1);\n    final params = <String, String>{};\n\n    for (final pair in queryString.split('&')) {\n      final eqIndex = pair.indexOf('=');\n      if (eqIndex != -1) {\n        params[pair.substring(0, eqIndex)] = pair.substring(eqIndex + 1);\n      }\n    }\n    return {'path': path, 'params': params};\n  }\n\n  String build(String path, Map<String, String> params) {\n    if (params.isEmpty) return path;\n    final query = params.entries.map((e) => '${e.key}=${e.value}').join('&');\n    return '$path?$query';\n  }\n}\n\nvoid main() {\n  final parser = RouteParser();\n\n  final parsed = parser.parse('/users/123?page=2&sort=name');\n  print('Path: ${parsed['path']}');\n  print('Params: ${parsed['params']}');\n\n  final built = parser.build('/search', {'q': 'dart', 'limit': '10'});\n  print('Built URL: $built');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-nav-001",

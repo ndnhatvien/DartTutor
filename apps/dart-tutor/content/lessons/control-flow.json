@@ -9,6 +9,60 @@
     "Viết boolean expressions"
   ],
   "prerequisites": ["basics"],
+  "theory": [
+    {
+      "title": "Câu lệnh if/else",
+      "content": [
+        "Câu lệnh `if/else` cho phép chương trình ra quyết định dựa trên điều kiện. Cú pháp cơ bản: `if (điều kiện) { ... } else { ... }`. Nếu điều kiện đúng (true), khối code trong if chạy, ngược lại khối trong else chạy.",
+        "Khi có nhiều mức quyết định, bạn dùng chuỗi `else if`. Ví dụ: `if (score >= 90) { print('A'); } else if (score >= 80) { print('B'); } else { print('C'); }` - chương trình kiểm tra từ trên xuống và dừng ở điều kiện đúng đầu tiên.",
+        "Điều kiện trong Dart phải là kiểu `bool` (true hoặc false). Khác với một số ngôn ngữ khác, bạn không thể dùng số như `if (1)` - Dart sẽ báo lỗi, cần viết rõ ràng như `if (so > 0)`."
+      ]
+    },
+    {
+      "title": "Toán tử so sánh",
+      "content": [
+        "Toán tử so sánh dùng để tạo ra kết quả bool. Các toán tử chính: `==` (bằng), `!=` (khác), `>` (lớn hơn), `<` (nhỏ hơn), `>=` (lớn hơn hoặc bằng), `<=` (nhỏ hơn hoặc bằng). Ví dụ: `x > 10`, `name == 'Dart'`.",
+        "Lưu ý phân biệt `=` (gán giá trị) và `==` (so sánh). Nhiều lỗi lập trình xảy ra do gõ nhầm `if (x = 5)` thay vì `if (x == 5)`. Trong Dart, `if (x = 5)` sẽ báo lỗi vì `x = 5` không trả về kiểu bool.",
+        "Để kết hợp nhiều điều kiện, dùng `&&` (và - cả hai đều đúng), `||` (hoặc - một trong hai đúng), và `!` (phủ định). Ví dụ: `if (age >= 18 && age < 65)` kiểm tra người trưởng thành nhưng chưa đến tuổi nghỉ hưu."
+      ]
+    },
+    {
+      "title": "Vòng lặp for",
+      "content": [
+        "Vòng lặp `for` dùng khi biết trước số lần lặp. Cú pháp gồm ba phần: khởi tạo, điều kiện lặp, và bước nhảy: `for (int i = 1; i <= 5; i++) { ... }` - biến `i` chạy từ 1 đến 5, mỗi lần tăng thêm 1.",
+        "Vòng lặp lồng nhau rất phổ biến khi duyệt các cấu trúc hai chiều, nhưng hãy chắc chắn mỗi vòng dùng biến đếm riêng (thường là `i`, `j`, `k`) để tránh trùng tên.",
+        "Dart còn có vòng lặp `for-in` để duyệt từng phần tử của collection: `for (var item in list) { print(item); }`. Đây là cách ngắn gọn và an toàn hơn khi bạn không cần biến đếm."
+      ]
+    },
+    {
+      "title": "Vòng lặp while và switch",
+      "content": [
+        "Vòng lặp `while` chạy miễn là điều kiện còn đúng: `while (điều kiện) { ... }`. Nó phù hợp khi bạn không biết trước số lần lặp. Lưu ý phải có lệnh thay đổi trạng thái (như `count--`) bên trong, nếu không sẽ dẫn đến vòng lặp vô hạn.",
+        "Biến thể `do-while` luôn chạy ít nhất một lần rồi mới kiểm tra điều kiện: `do { ... } while (điều kiện);`.",
+        "Câu lệnh `switch` kiểm tra một giá trị với nhiều trường hợp (`case`). Mỗi case thường kết thúc bằng `break` hoặc `return`. Nếu không có case nào khớp, `default` sẽ chạy. Ví dụ: `switch (day) { case 1: ...; break; default: ...; }`."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "control-flow-ex1",
+      "title": "Xếp loại điểm với if/else",
+      "description": "Ví dụ dùng chuỗi if-else if để xếp loại theo điểm số. Học viên chú ý thứ tự kiểm tra từ điểm cao xuống thấp.",
+      "code": "String xepLoai(int score) {\n  if (score >= 90) {\n    return 'A';\n  } else if (score >= 80) {\n    return 'B';\n  } else if (score >= 70) {\n    return 'C';\n  } else if (score >= 60) {\n    return 'D';\n  } else {\n    return 'F';\n  }\n}\n\nvoid main() {\n  print('95 điểm: ${xepLoai(95)}');\n  print('73 điểm: ${xepLoai(73)}');\n  print('55 điểm: ${xepLoai(55)}');\n}"
+    },
+    {
+      "id": "control-flow-ex2",
+      "title": "Tính tổng với vòng lặp for",
+      "description": "Ví dụ dùng for loop để cộng dồn các số trong khoảng. Học viên chú ý điều kiện i <= end để bao gồm cả số cuối.",
+      "code": "int tongTuDen(int start, int end) {\n  int sum = 0;\n  for (int i = start; i <= end; i++) {\n    sum += i;\n  }\n  return sum;\n}\n\nvoid main() {\n  print('Tổng từ 1 đến 5: ${tongTuDen(1, 5)}');\n  print('Tổng từ 10 đến 12: ${tongTuDen(10, 12)}');\n}"
+    },
+    {
+      "id": "control-flow-ex3",
+      "title": "Đếm ngược với while",
+      "description": "Ví dụ dùng while loop để tạo dãy số đếm ngược. Học viên chú ý lệnh current-- để tránh vòng lặp vô hạn.",
+      "code": "List<int> demNguoc(int n) {\n  final result = <int>[];\n  int current = n;\n  while (current >= 0) {\n    result.add(current);\n    current--;\n  }\n  return result;\n}\n\nvoid main() {\n  print('Đếm ngược từ 5: ${demNguoc(5)}');\n  print('Đếm ngược từ 3: ${demNguoc(3)}');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "control-flow-001",

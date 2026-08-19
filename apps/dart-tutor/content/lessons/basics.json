@@ -9,6 +9,60 @@
     "Viết và gọi functions"
   ],
   "prerequisites": [],
+  "theory": [
+    {
+      "title": "Biến và suy luận kiểu với var",
+      "content": [
+        "Trong Dart, biến dùng để lưu trữ dữ liệu. Khi khai báo bằng `var`, Dart tự động suy luận kiểu dữ liệu dựa trên giá trị gán vào. Ví dụ: `var age = 25;` thì Dart hiểu `age` là kiểu `int`, còn `var height = 1.75;` thì Dart hiểu `height` là kiểu `double`.",
+        "Bạn cũng có thể khai báo kiểu tường minh như `int age = 25;` hoặc `double height = 1.75;`. Tuy nhiên, việc dùng `var` giúp code ngắn gọn hơn và vẫn an toàn vì kiểu được suy luận một lần và cố định, không thể gán giá trị khác kiểu.",
+        "Một biến khai báo bằng `var` có thể được gán lại giá trị mới cùng kiểu. Ví dụ: `var score = 10; score = 20;` là hợp lệ, nhưng `score = 'điểm';` sẽ báo lỗi vì kiểu đã được suy luận là `int`."
+      ]
+    },
+    {
+      "title": "final và const - biến bất biến",
+      "content": [
+        "Đôi khi bạn muốn khai báo biến mà giá trị không được thay đổi. Từ khóa `final` cho phép gán giá trị đúng một lần tại runtime. Ví dụ: `final appName = 'DartTutor';` - sau khi gán, không thể gán lại `appName` với giá trị khác.",
+        "Từ khóa `const` mạnh hơn `final` một chút: giá trị phải được biết tại thời điểm compile (compile-time constant). Ví dụ: `const pi = 3.14;` là hợp lệ vì 3.14 là một hằng số cố định.",
+        "Khác biệt chính: `final` chỉ cần gán một lần khi chạy chương trình (có thể lấy giá trị từ biến khác), còn `const` phải là hằng số được biết trước khi biên dịch. Nếu cần một hằng số thật sự như số lần thử tối đa, hãy dùng `const`."
+      ]
+    },
+    {
+      "title": "String interpolation",
+      "content": [
+        "String interpolation cho phép nhúng giá trị của biến vào bên trong chuỗi một cách dễ dàng, sử dụng ký hiệu `$`. Ví dụ: `var name = 'Alice'; print('Hello, $name!');` sẽ in ra `Hello, Alice!`.",
+        "Khi biểu thức phức tạp hơn một biến đơn giản, bạn cần dùng cặp ngoặc nhọn: `print('Tổng là ${a + b}');`. Điều này giúp Dart hiểu chính xác phần nào của chuỗi là biểu thức cần tính.",
+        "So với việc nối chuỗi bằng dấu `+` như `'Hello, ' + name + '!'`, interpolation giúp code dễ đọc hơn nhiều, đặc biệt khi chuỗi có nhiều biến: `'$name năm nay $age tuổi, cao $height m'`."
+      ]
+    },
+    {
+      "title": "Hàm (functions) cơ bản",
+      "content": [
+        "Hàm là một khối code có tên, nhận tham số đầu vào và trả về kết quả. Cú pháp: `ReturnType tenHam(ThamSo thamSo) { ... return giaTri; }`. Ví dụ: `int cong(int a, int b) { return a + b; }` là hàm cộng hai số.",
+        "Nếu hàm không trả về giá trị nào, dùng kiểu `void`. Nếu dùng arrow function, cú pháp ngắn gọn hơn: `int cong(int a, int b) => a + b;` - ký hiệu `=>` nghĩa là trả về ngay biểu thức phía sau.",
+        "Để gọi hàm, chỉ cần viết tên hàm kèm tham số: `print(cong(3, 4));` sẽ in ra `7`. Trong Dart, mọi code đều chạy bên trong hàm `main()`, vì vậy `void main() { ... }` là điểm khởi đầu của mọi chương trình."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "basics-ex1",
+      "title": "Khai báo biến với var",
+      "description": "Ví dụ minh họa cách khai báo biến bằng var và để Dart tự suy luận kiểu. Học viên chú ý rằng kiểu của biến được cố định sau khi khai báo.",
+      "code": "void main() {\n  var name = 'Dart';\n  var version = 3.0;\n  var isFun = true;\n\n  print('Ngôn ngữ: $name');\n  print('Phiên bản: $version');\n  print('Có thú vị không? $isFun');\n}"
+    },
+    {
+      "id": "basics-ex2",
+      "title": "final và const",
+      "description": "Ví dụ so sánh final với const. Học viên chú ý rằng final gán một lần tại runtime, còn const phải là hằng số được biết từ lúc biên dịch.",
+      "code": "void main() {\n  final appName = 'DartTutor';\n  const maxAttempts = 3;\n\n  print('Ứng dụng: $appName');\n  print('Số lần thử tối đa: $maxAttempts');\n\n  // final vẫn có thể lấy giá trị từ biến khác:\n  final releaseYear = 2024;\n  print('Phát hành năm: $releaseYear');\n}"
+    },
+    {
+      "id": "basics-ex3",
+      "title": "String interpolation và hàm",
+      "description": "Ví dụ kết hợp string interpolation với hàm. Học viên chú ý cách dùng ${} cho biểu thức phức tạp và cách khai báo hàm trả về chuỗi.",
+      "code": "String chaoHoi(String name, int age) {\n  return 'Xin chào $name, năm nay bạn $age tuổi!';\n}\n\nvoid main() {\n  var name = 'Minh';\n  var age = 20;\n\n  print(chaoHoi(name, age));\n  print('Năm năm nữa bạn sẽ ${age + 5} tuổi.');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "basics-001",
@@ -178,5 +232,4 @@
       ]
     }
   ]
-
 }

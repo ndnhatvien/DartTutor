@@ -8,6 +8,60 @@
     "Xử lý form submission và error display"
   ],
   "prerequisites": ["flutter-basics", "flutter-state"],
+  "theory": [
+    {
+      "title": "Form và FormState trong Flutter",
+      "content": [
+        "Trong Flutter, widget `Form` đóng vai trò là container quản lý trạng thái cho toàn bộ nhóm các trường nhập liệu. Bên trong `Form`, mỗi `TextFormField` được đăng ký với một `FormState` chung, giúp bạn validate hoặc reset toàn bộ các trường chỉ với một lệnh duy nhất.",
+        "Bạn lấy `FormState` thông qua `Form.of(context)` hoặc dùng `GlobalKey<FormState>` gắn vào widget `Form`. Phương thức `validate()` chạy validator của tất cả các trường và trả về `true` nếu mọi thứ hợp lệ; `save()` gọi `onSaved` của từng trường để thu thập dữ liệu.",
+        "Bài học này mô phỏng khái niệm trên bằng class `FormState` thuần Dart: nó giữ một map các giá trị, theo dõi trạng thái dirty, và chạy một map các hàm validator để trả về danh sách lỗi — giống cách `Form.validate()` hoạt động trong Flutter thật."
+      ]
+    },
+    {
+      "title": "Validation với TextFormField",
+      "content": [
+        "Mỗi `TextFormField` có tham số `validator: (value) => ...`. Hàm này nhận giá trị hiện tại và trả về `null` nếu hợp lệ, hoặc trả về một chuỗi lỗi nếu không hợp lệ. Chuỗi lỗi sẽ được hiển thị trực tiếp bên dưới trường nhập liệu qua thuộc tính `errorText`.",
+        "Một điều quan trọng: validator chỉ được gọi khi bạn gọi `validate()` trên `FormState`, không phải sau mỗi lần người dùng gõ phím. Vì vậy bạn có thể gộp nhiều quy tắc vào một validator duy nhất và ưu tiên trả về lỗi đầu tiên để hiển thị cho người dùng.",
+        "Trong mô phỏng Dart, mỗi hàm validator có chữ ký `String? Function(String)` — nhận một chuỗi giá trị và trả về `String?` (null khi hợp lệ), hoàn toàn tương đương với chữ ký validator của Flutter."
+      ]
+    },
+    {
+      "title": "Các quy tắc validation phổ biến: required, email, độ dài",
+      "content": [
+        "Quy tắc bắt buộc kiểm tra trường không được rỗng. Lưu ý nên dùng `value.trim().isEmpty` thay vì `value.isEmpty` để một chuỗi chỉ gồm khoảng trắng cũng bị coi là rỗng — đây là lỗi rất thường gặp khi viết validator.",
+        "Với email, regex đầy đủ rất phức tạp nên hầu hết ứng dụng dùng quy tắc gọn nhẹ: chuỗi phải chứa ký tự `@` và có dấu chấm `.` ở phía sau `@`. Cách kiểm tra này đủ để chặn các giá trị sai hiển nhiên như 'saiemail' mà vẫn chạy nhanh.",
+        "Quy tắc `minLength`/`maxLength` so sánh `value.length` với một ngưỡng. Bạn có thể dùng `FieldValidator.minLength(value, 6)` cho mật khẩu, hoặc `maxLength(value, 50)` cho tên hiển thị, và tham số min/max được nhúng thẳng vào chuỗi lỗi để thông báo rõ ràng."
+      ]
+    },
+    {
+      "title": "Xử lý submit và hiển thị lỗi",
+      "content": [
+        "Khi người dùng bấm nút submit, luồng chuẩn trong Flutter là gọi `_formKey.currentState.validate()`. Nếu trả về `true`, bạn gọi `save()` rồi tiếp tục gửi dữ liệu lên server; nếu `false`, các lỗi sẽ tự hiển thị dưới từng trường và dữ liệu không được gửi đi.",
+        "Một pattern phổ biến là vô hiệu hóa nút submit trong lúc form còn lỗi hoặc còn dirty, giúp người dùng biết rõ trạng thái biểu mẫu. Đây chính là ý tưởng của phương thức `submit()` trong bài tập: chỉ trả về dữ liệu khi form hợp lệ và sạch.",
+        "Với form nhiều bước (wizard), người ta lưu dữ liệu từng bước vào một map chung và chỉ validate các trường của bước hiện tại trước khi chuyển bước — được mô phỏng bởi class `FormWizard` trong phần bài tập."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-forms-ex1",
+      "title": "Kiểm tra email và trường bắt buộc",
+      "description": "Mô phỏng validator của TextFormField bằng class FieldValidator thuần Dart. Chú ý cách dùng trim() để bắt chuỗi toàn khoảng trắng và cách kiểm tra email bằng ký tự @ cùng dấu chấm ở phía sau.",
+      "code": "class FieldValidator {\n  static String? required(String value) {\n    if (value.trim().isEmpty) {\n      return 'Trường này không được để trống';\n    }\n    return null;\n  }\n\n  static String? email(String value) {\n    if (!value.contains('@')) {\n      return 'Email không hợp lệ';\n    }\n    final afterAt = value.substring(value.indexOf('@') + 1);\n    if (afterAt.isEmpty || !afterAt.contains('.')) {\n      return 'Email không hợp lệ';\n    }\n    return null;\n  }\n\n  static String? minLength(String value, int min) {\n    if (value.length < min) {\n      return 'Tối thiểu $min ký tự';\n    }\n    return null;\n  }\n}\n\nvoid main() {\n  final samples = ['', '   ', 'nguoidung@example.com', 'sai.email', 'abc'];\n  for (final s in samples) {\n    print('Giá trị: ${s.isEmpty ? '(trống)' : s}');\n    print('  required => ${FieldValidator.required(s)}');\n    print('  email    => ${FieldValidator.email(s)}');\n  }\n  print('minLength(abc, 5)    => ${FieldValidator.minLength('abc', 5)}');\n  print('minLength(abcdef, 5) => ${FieldValidator.minLength('abcdef', 5)}');\n}"
+    },
+    {
+      "id": "flutter-forms-ex2",
+      "title": "Quản lý trạng thái biểu mẫu",
+      "description": "Mô phỏng FormState của Flutter: theo dõi giá trị từng trường, đánh dấu dirty khi có thay đổi, chạy danh sách validators và chỉ submit khi form hợp lệ. Hãy để ý cách submit() trả về null khi form còn dirty.",
+      "code": "class FormState {\n  final Map<String, String> _values = {};\n  final Map<String, String> _initialValues = {};\n  bool _dirty = false;\n\n  FormState(Map<String, String> initialValues) {\n    _values.addAll(initialValues);\n    _initialValues.addAll(initialValues);\n  }\n\n  String getValue(String field) => _values[field] ?? '';\n\n  void setValue(String field, String value) {\n    _values[field] = value;\n    if (_initialValues[field] != value) {\n      _dirty = true;\n    }\n  }\n\n  bool isDirty() => _dirty;\n\n  Map<String, String?> validate(\n      Map<String, String? Function(String)> validators) {\n    final errors = <String, String?>{};\n    for (final entry in validators.entries) {\n      errors[entry.key] = entry.value(_values[entry.key] ?? '');\n    }\n    return errors;\n  }\n\n  Map<String, String>? submit() {\n    if (_dirty) return null;\n    return Map.from(_values);\n  }\n}\n\nString? notEmpty(String v) => v.trim().isEmpty ? 'Bắt buộc' : null;\n\nString? isEmail(String v) {\n  if (!v.contains('@')) return 'Email sai định dạng';\n  return null;\n}\n\nvoid main() {\n  final form = FormState({'name': '', 'email': ''});\n  form.setValue('name', 'Nguyễn Văn A');\n  print('Dirty: ${form.isDirty()}');\n  print('Name: ${form.getValue('name')}');\n\n  final errors = form.validate({'name': notEmpty, 'email': isEmail});\n  print('Lỗi email: ${errors['email']}');\n  print('Lỗi name: ${errors['name']}');\n  print('Submit (còn dirty): ${form.submit()}');\n\n  final clean = FormState({'name': 'Nguyễn Văn A', 'email': 'a@b.com'});\n  print('Submit (sạch): ${clean.submit()}');\n}"
+    },
+    {
+      "id": "flutter-forms-ex3",
+      "title": "Biểu mẫu đăng ký với nhiều quy tắc",
+      "description": "Kết hợp các validator thành một pipeline cho form đăng ký: mỗi trường chạy lần lượt các quy tắc required → email → minLength và trả về lỗi đầu tiên. Giống cách Flutter chạy validator trên từng TextFormField trước khi submit.",
+      "code": "class RegistrationForm {\n  static String? _firstError(List<String?> checks) {\n    for (final c in checks) {\n      if (c != null) return c;\n    }\n    return null;\n  }\n\n  static String? validateUsername(String value) {\n    return _firstError([\n      value.trim().isEmpty ? 'Tên người dùng không được trống' : null,\n      value.length < 3 ? 'Tên tối thiểu 3 ký tự' : null,\n      value.length > 20 ? 'Tên tối đa 20 ký tự' : null,\n    ]);\n  }\n\n  static String? validateEmail(String value) {\n    if (value.trim().isEmpty) return 'Email không được trống';\n    if (!value.contains('@')) return 'Email không hợp lệ';\n    final afterAt = value.substring(value.indexOf('@') + 1);\n    if (afterAt.isEmpty || !afterAt.contains('.')) {\n      return 'Email không hợp lệ';\n    }\n    return null;\n  }\n\n  static String? validatePassword(String value) {\n    if (value.length < 6) return 'Mật khẩu tối thiểu 6 ký tự';\n    return null;\n  }\n\n  static Map<String, String?> validateAll(Map<String, String> inputs) {\n    return {\n      'username': validateUsername(inputs['username'] ?? ''),\n      'email': validateEmail(inputs['email'] ?? ''),\n      'password': validatePassword(inputs['password'] ?? ''),\n    };\n  }\n}\n\nvoid main() {\n  final invalid = {'username': 'ab', 'email': 'saiemail', 'password': '123'};\n  final errors = RegistrationForm.validateAll(invalid);\n  for (final entry in errors.entries) {\n    print('${entry.key}: ${entry.value ?? '(hợp lệ)'}');\n  }\n\n  print('---');\n  final valid = {\n    'username': 'nguyenvana',\n    'email': 'nguyenvana@example.com',\n    'password': 'secret123',\n  };\n  final ok = RegistrationForm.validateAll(valid);\n  for (final entry in ok.entries) {\n    print('${entry.key}: ${entry.value ?? '(hợp lệ)'}');\n  }\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-form-001",

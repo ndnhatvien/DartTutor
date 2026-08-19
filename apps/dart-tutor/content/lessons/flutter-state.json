@@ -8,6 +8,60 @@
     "Sử dụng observer pattern để notify listeners"
   ],
   "prerequisites": ["flutter-basics"],
+  "theory": [
+    {
+      "title": "State là gì và vì sao cần quản lý state?",
+      "content": [
+        "State (trạng thái) là dữ liệu mà ứng dụng cần nhớ để vẽ giao diện đúng: số lượng item trong giỏ hàng, trạng thái đang đăng nhập, ô input đang được gõ. Khi state thay đổi, giao diện phải được cập nhật lại để phản ánh dữ liệu mới.",
+        "Nếu không quản lý state cẩn thận, mỗi widget sẽ tự giữ dữ liệu riêng, gây khó đồng bộ giữa các màn hình. Vì vậy Flutter và cộng đồng xây dựng nhiều giải pháp: setState, InheritedWidget, Provider, Riverpod, Bloc... Mục tiêu chung là 'single source of truth' — một nơi duy nhất giữ dữ liệu và thông báo cho UI khi dữ liệu đổi.",
+        "Để luyện tập bằng Dart thuần, chúng ta mô phỏng bằng class StateStore: một Map bên trong giữ toàn bộ state, method set() ghi dữ liệu, method get() đọc dữ liệu. Đây là hình dung đơn giản nhất của 'central store' mà nhiều thư viện state management sử dụng."
+      ]
+    },
+    {
+      "title": "setState và StatefulWidget",
+      "content": [
+        "Trong Flutter, StatefulWidget có State chứa dữ liệu thay đổi được. Khi bạn muốn cập nhật giao diện, bạn gọi setState(() { ... }) — Flutter sẽ chạy lại method build() để vẽ lại widget với dữ liệu mới.",
+        "Điểm quan trọng: bạn không bao giờ vẽ lại UI bằng tay. Bạn chỉ thay đổi state, gọi setState(), và Flutter lo phần còn lại. Điều này đảm bảo UI luôn khớp với state.",
+        "Trong mô phỏng Dart thuần, method set() của StateStore tương ứng với việc thay đổi state bên trong setState(). Ngoài ra, nguyên tắc encapsulation của Flutter được mô phỏng bằng biến private (dấu _): bên ngoài chỉ thay đổi state qua method công khai, không truy cập trực tiếp vào Map nội bộ."
+      ]
+    },
+    {
+      "title": "Observer pattern: ValueNotifier và ChangeNotifier",
+      "content": [
+        "Observer pattern là mô hình: một đối tượng 'phát' (notifier) giữ danh sách các listener, và mỗi khi giá trị thay đổi nó gọi listener để họ tự cập nhật. Đây là nền tảng của ValueNotifier và ChangeNotifier trong Flutter.",
+        "ValueNotifier<T> quản lý một giá trị: bạn đọc qua notifier.value và gán qua notifier.value = newValue. Khi giá trị mới KHÁC giá trị cũ, nó tự động gọi tất cả listeners. ChangeNotifier tương tự nhưng quản lý nhiều trường dữ liệu và bạn tự gọi notifyListeners() khi muốn thông báo.",
+        "AnimatedBuilder, ValueListenableBuilder... là các widget lắng nghe notifier và tự rebuild khi có thông báo. Trong mô phỏng Dart thuần, chúng ta viết class ValueNotifier<T> với đúng cơ chế: setter kiểm tra giá trị khác (==), danh sách _listeners, các method addListener/removeListener/dispose — giống hệt API của Flutter."
+      ]
+    },
+    {
+      "title": "Kết hợp nhiều state: aggregation",
+      "content": [
+        "Ứng dụng thực tế có nhiều state cùng lúc (user, cart, settings...). Khi state phức tạp, ta gom chúng lại một chỗ: một store lớn chứa nhiều key, hoặc nhiều notifier nhỏ rồi kết hợp lại. Cách gom nhóm này gọi là state aggregation.",
+        "Mô hình thông thường: listener theo từng key (chỉ chạy khi key đó đổi) và listener toàn cục (chạy khi bất kỳ key nào đổi). Điều này giúp UI chỉ rebuild phần liên quan, tăng hiệu năng.",
+        "Trong mô phỏng Dart thuần, class StateAggregator quản lý Map<String, dynamic> chung, có onChange(key, callback) cho listener theo key và onChangeAll(callback) cho listener toàn cục. Method update() sẽ gọi key listeners trước rồi gọi global listeners — đúng thứ tự để UI cập nhật đầy đủ."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-state-ex1",
+      "title": "StateStore: central state đơn giản",
+      "description": "Mô phỏng một central store giữ toàn bộ state trong Map private. Hãy chú ý getAll() trả về bản sao (Map.from) để bên ngoài không thể sửa state gốc.",
+      "code": "class StateStore {\n  final Map<String, dynamic> _state = {};\n\n  dynamic get(String key) {\n    return _state[key];\n  }\n\n  void set(String key, dynamic value) {\n    _state[key] = value;\n  }\n\n  Map<String, dynamic> getAll() {\n    return Map.from(_state);\n  }\n\n  String describe() {\n    final entries = _state.entries.map((e) => '${e.key}=${e.value}').join(', ');\n    return 'State(keys: ${_state.length}): $entries';\n  }\n}\n\nvoid main() {\n  final store = StateStore();\n  store.set('count', 0);\n  store.set('name', 'Alice');\n  store.set('isLoggedIn', true);\n\n  print(store.describe());\n  print('get(\"count\") = ${store.get('count')}');\n\n  store.set('count', 1);\n  print('Sau khi set count=1: ${store.describe()}');\n}"
+    },
+    {
+      "id": "flutter-state-ex2",
+      "title": "ValueNotifier: thông báo khi giá trị đổi",
+      "description": "Mô phỏng ValueNotifier<T> của Flutter: listener chỉ được gọi khi giá trị mới khác giá trị cũ. Quan sát việc gán cùng giá trị không tạo thông báo thừa.",
+      "code": "class ValueNotifier<T> {\n  T _value;\n  final List<Function> _listeners = [];\n\n  ValueNotifier(this._value);\n\n  T get value => _value;\n\n  set value(T newValue) {\n    if (_value == newValue) return;\n    _value = newValue;\n    for (final listener in _listeners) {\n      listener();\n    }\n  }\n\n  void addListener(Function listener) {\n    _listeners.add(listener);\n  }\n\n  void removeListener(Function listener) {\n    _listeners.remove(listener);\n  }\n}\n\nvoid main() {\n  final notifier = ValueNotifier<int>(0);\n  int notifiedCount = 0;\n\n  notifier.addListener(() {\n    notifiedCount++;\n    print('Thông báo: value = ${notifier.value}');\n  });\n\n  notifier.value = 1;\n  notifier.value = 1;\n  notifier.value = 2;\n  notifier.value = 3;\n\n  print('Tổng số lần notified: $notifiedCount');\n}"
+    },
+    {
+      "id": "flutter-state-ex3",
+      "title": "StateAggregator: gom nhiều state",
+      "description": "Mô phỏng việc quản lý nhiều state cùng lúc với listener theo key và listener toàn cục. Quan sát thứ tự gọi: key listeners trước, global listeners sau.",
+      "code": "class StateAggregator {\n  final Map<String, dynamic> _state = {};\n  final Map<String, List<Function>> _keyListeners = {};\n  final List<Function> _globalListeners = [];\n\n  StateAggregator(Map<String, dynamic> initialValues) {\n    _state.addAll(initialValues);\n  }\n\n  dynamic get(String key) {\n    return _state[key];\n  }\n\n  void update(String key, dynamic value) {\n    if (_state[key] == value) return;\n    _state[key] = value;\n\n    final keyCallbacks = _keyListeners[key];\n    if (keyCallbacks != null) {\n      for (final cb in keyCallbacks) {\n        cb();\n      }\n    }\n    for (final cb in _globalListeners) {\n      cb();\n    }\n  }\n\n  void onChange(String key, Function callback) {\n    _keyListeners.putIfAbsent(key, () => []).add(callback);\n  }\n\n  void onChangeAll(Function callback) {\n    _globalListeners.add(callback);\n  }\n\n  String describe() {\n    final entries = _state.entries.map((e) => '${e.key}=${e.value}').join(', ');\n    return 'Aggregator($entries)';\n  }\n}\n\nvoid main() {\n  final agg = StateAggregator({'count': 0, 'name': 'Alice'});\n  final events = <String>[];\n\n  agg.onChange('count', () => events.add('count-change'));\n  agg.onChangeAll(() => events.add('global-change'));\n\n  agg.update('count', 1);\n  agg.update('name', 'Bob');\n\n  print('Các sự kiện: $events');\n  print(agg.describe());\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-state-001",

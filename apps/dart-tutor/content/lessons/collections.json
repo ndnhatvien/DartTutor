@@ -9,6 +9,60 @@
     "Aggregate với fold/reduce"
   ],
   "prerequisites": ["basics", "control-flow", "functions-null-safety"],
+  "theory": [
+    {
+      "title": "List - danh sách có thứ tự",
+      "content": [
+        "`List` là collection phổ biến nhất, chứa các phần tử có thứ tự và cho phép trùng lặp. Khai báo bằng dấu ngoặc vuông: `var fruits = ['táo', 'cam', 'xoài'];`. Để đọc phần tử, dùng chỉ số bắt đầu từ 0: `fruits[0]` trả về `'táo'`.",
+        "List có thể thêm phần tử bằng `.add(value)` hoặc `.addAll([...])`, xóa bằng `.remove(value)`. Thuộc tính `.length` cho biết số phần tử. Khai báo kiểu cụ thể như `List<int> numbers` giúp đảm bảo chỉ chứa đúng loại dữ liệu mong muốn.",
+        "Với khai báo generic, `var numbers = <int>[1, 2, 3];` cũng tương đương với `List<int> numbers = [1, 2, 3];`. Hãy luôn chỉ định kiểu cho list để trình biên dịch giúp bạn phát hiện lỗi sớm."
+      ]
+    },
+    {
+      "title": "Set - tập hợp không trùng lặp",
+      "content": [
+        "`Set` là collection lưu các phần tử duy nhất, không cho phép trùng lặp. Khai báo bằng dấu ngoặc nhọn: `var unique = {1, 2, 3};`. Nếu thêm `3` lần nữa, tập hợp vẫn chỉ có một phần tử `3`.",
+        "Khi cần loại bỏ phần tử trùng lặp từ một List, cách nhanh nhất là chuyển List sang Set rồi chuyển ngược lại: `numbers.toSet().toList()`. Ví dụ `[1, 2, 2, 3].toSet().toList()` cho kết quả `[1, 2, 3]`.",
+        "Set thường dùng để kiểm tra một phần tử có tồn tại không bằng `.contains(value)` - thao tác này nhanh hơn so với duyệt toàn bộ List khi dữ liệu lớn."
+      ]
+    },
+    {
+      "title": "Map - cặp khóa - giá trị",
+      "content": [
+        "`Map` lưu dữ liệu theo cặp khóa (key) và giá trị (value). Khai báo: `var scores = {'minh': 90, 'lan': 85};`. Để truy cập giá trị, dùng key: `scores['minh']` trả về `90`.",
+        "Để thêm hoặc cập nhật một cặp: `scores['hoa'] = 95;` - nếu key đã tồn tại thì giá trị được ghi đè, nếu chưa thì cặp mới được thêm. Kiểm tra key tồn tại bằng `.containsKey(key)`.",
+        "Map cũng có thể duyệt qua `.keys` (danh sách các khóa), `.values` (danh sách các giá trị) hoặc từng cặp bằng vòng lặp `for (final entry in map.entries)`. Đây là nền tảng cho việc nhóm dữ liệu theo tiêu chí nào đó."
+      ]
+    },
+    {
+      "title": "Lọc và biến đổi với where, map, fold",
+      "content": [
+        "Phương thức `where` lọc các phần tử thỏa mãn một điều kiện và trả về `Iterable`: `numbers.where((n) => n % 2 == 0)` chọn các số chẵn. Vì `where` trả về `Iterable` chứ không phải `List`, hãy gọi `.toList()` để lấy lại List.",
+        "Phương thức `map` biến đổi từng phần tử thành một giá trị mới: `numbers.map((n) => n * n)` tạo Iterable chứa bình phương của từng số. Tương tự, thêm `.toList()` nếu cần List.",
+        "Phương thức `fold` gộp toàn bộ collection thành một giá trị duy nhất: `numbers.fold(0, (sum, value) => sum + value)` tính tổng, với `0` là giá trị khởi tạo. Cả ba phương thức đều nhận một hàm làm tham số, giúp code ngắn gọn và rõ ràng."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "collections-ex1",
+      "title": "Thao tác cơ bản với List",
+      "description": "Ví dụ khởi tạo List, thêm, xóa và duyệt phần tử. Học viên chú ý chỉ số bắt đầu từ 0 và cách dùng for-in.",
+      "code": "void main() {\n  var fruits = <String>['táo', 'cam', 'xoài'];\n  print('Danh sách ban đầu: $fruits');\n  print('Phần tử đầu tiên: ${fruits[0]}');\n\n  fruits.add('ổi');\n  print('Sau khi thêm: $fruits');\n  print('Tổng số loại quả: ${fruits.length}');\n\n  for (final fruit in fruits) {\n    print('- $fruit');\n  }\n}"
+    },
+    {
+      "id": "collections-ex2",
+      "title": "Loại bỏ trùng lặp bằng Set",
+      "description": "Ví dụ dùng Set để loại bỏ phần tử trùng lặp trong List. Học viên chú ý chuỗi chuyển đổi List -> Set -> List.",
+      "code": "List<int> removeDuplicates(List<int> numbers) {\n  return numbers.toSet().toList();\n}\n\nvoid main() {\n  print(removeDuplicates([1, 2, 2, 3, 3, 3]));\n  print(removeDuplicates([5, 5, 5]));\n  print(removeDuplicates([1, 2, 3]));\n}"
+    },
+    {
+      "id": "collections-ex3",
+      "title": "Lọc số chẵn với where",
+      "description": "Ví dụ dùng where để lọc phần tử thỏa điều kiện và dùng map để biến đổi. Học viên chú ý phải gọi .toList() để lấy List.",
+      "code": "void main() {\n  var numbers = [1, 2, 3, 4, 5, 6];\n\n  var evenNumbers = numbers.where((n) => n % 2 == 0).toList();\n  print('Số chẵn: $evenNumbers');\n\n  var squares = numbers.map((n) => n * n).toList();\n  print('Bình phương: $squares');\n\n  var sum = numbers.fold(0, (total, value) => total + value);\n  print('Tổng: $sum');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "collections-001",

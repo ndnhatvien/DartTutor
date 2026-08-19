@@ -9,6 +9,60 @@
     "Xử lý null safely"
   ],
   "prerequisites": ["basics", "control-flow"],
+  "theory": [
+    {
+      "title": "Nullable types",
+      "content": [
+        "Trong Dart với sound null safety, mọi biến mặc định không thể chứa giá trị `null`. Nếu bạn muốn một biến có thể là null, hãy thêm dấu `?` vào sau kiểu: `String? name;` có nghĩa là `name` có thể là một chuỗi hoặc `null`.",
+        "Điều này giúp trình biên dịch phát hiện lỗi ngay tại thời điểm code: bạn không thể truy cập `.length` trên một biến nullable mà chưa kiểm tra null. Ví dụ `String? text; text.length;` sẽ báo lỗi, bắt buộc bạn phải xử lý trường hợp null trước.",
+        "Khi một hàm có thể không trả về kết quả, hãy khai báo kiểu trả về là nullable: `int? parseIntSafe(String? text) { ... }`. Điều này thể hiện rõ ý định của người viết và giúp người gọi hàm biết phải xử lý null."
+      ]
+    },
+    {
+      "title": "Null-aware operators: ?., ?? và !",
+      "content": [
+        "Toán tử `?.` (null-aware access) cho phép truy cập thuộc tính một cách an toàn: `text?.length` trả về `null` nếu `text` là null, thay vì gây lỗi. Đây là cách ngắn gọn thay cho việc viết `if (text == null) { ... }`.",
+        "Toán tử `??` (null coalescing) cung cấp giá trị mặc định khi biểu thức bên trái là null: `final len = text?.length ?? 0;` - nếu `text` null thì `len` bằng 0, ngược lại `len` bằng độ dài của `text`. Kết hợp `?.` và `??` giúp xử lý null rất gọn gàng.",
+        "Toán tử `!` (null assertion) khẳng định với trình biên dịch rằng một biến nullable chắc chắn không null: `String name = maybeName!;`. Chỉ dùng khi bạn chắc chắn giá trị tồn tại, vì nếu thực tế là null, chương trình sẽ ném lỗi runtime."
+      ]
+    },
+    {
+      "title": "Hàm với tham số",
+      "content": [
+        "Hàm trong Dart có thể nhận tham số bắt buộc, tham số tùy chọn theo vị trí (`[ ... ]`) và tham số tùy chọn theo tên (`{ ... }`). Tham số bắt buộc phải được truyền khi gọi hàm, còn tham số tùy chọn có thể bỏ qua.",
+        "Tham số tùy chọn theo vị trí dùng dấu ngoặc vuông và có thể có giá trị mặc định: `String greet(String name, [String greeting = 'Hello'])`. Khi gọi `greet('Minh')` thì `greeting` tự nhận giá trị `'Hello'`, còn gọi `greet('Minh', 'Hi')` sẽ dùng `'Hi'`.",
+        "Tham số theo tên dùng dấu ngoặc nhọn. Với các tham số bắt buộc theo tên, thêm từ khóa `required`: `String createUser({required String name, int age = 0})`. Khi gọi hàm, truyền theo cú pháp `createUser(name: 'Minh')`, giúp code tự giải thích rõ ràng hơn."
+      ]
+    },
+    {
+      "title": "Xử lý null an toàn trong hàm",
+      "content": [
+        "Khi một hàm nhận tham số nullable, hãy quyết định cách xử lý null trước khi sử dụng: kiểm tra bằng `if`, dùng `??` với giá trị mặc định, hoặc ném exception. Việc này tránh những lỗi khó phát hiện lúc runtime.",
+        "Một số hàm chuẩn trong Dart hỗ trợ sẵn trả về null để an toàn, ví dụ `int.tryParse('123')` trả về `123`, còn `int.tryParse('abc')` trả về `null` thay vì ném lỗi. Điều này rất hữu ích khi parse dữ liệu từ người dùng.",
+        "Ngoài ra còn có `final` kết hợp với `late` để trì hoãn khởi tạo, và toán tử cascade `..` để gọi nhiều method liên tiếp trên cùng một đối tượng: `return <int>[]..add(1)..add(2);`. Nắm chắc các công cụ này giúp viết code Dart an toàn và súc tích."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "functions-null-ex1",
+      "title": "Lấy độ dài chuỗi an toàn",
+      "description": "Ví dụ kết hợp ?. và ?? để xử lý chuỗi có thể là null. Học viên chú ý kết quả khi text là null sẽ là 0.",
+      "code": "int getLength(String? text) {\n  return text?.length ?? 0;\n}\n\nvoid main() {\n  print('Độ dài của Hello: ${getLength('Hello')}');\n  print('Độ dài của null: ${getLength(null)}');\n  print('Độ dài của chuỗi rỗng: ${getLength('')}');\n}"
+    },
+    {
+      "id": "functions-null-ex2",
+      "title": "Hàm với named parameters",
+      "description": "Ví dụ về required, default value và xử lý null với ?? trong named parameters. Học viên chú ý thứ tự tham số khi gọi hàm.",
+      "code": "String createUser({required String name, int age = 0, String? email}) {\n  final emailStr = email ?? 'none';\n  return 'User: $name, Age: $age, Email: $emailStr';\n}\n\nvoid main() {\n  print(createUser(name: 'Alice'));\n  print(createUser(name: 'Bob', age: 25));\n  print(createUser(name: 'Carol', age: 30, email: 'c@ex.com'));\n}"
+    },
+    {
+      "id": "functions-null-ex3",
+      "title": "Null assertion với !",
+      "description": "Ví dụ kiểm tra null rồi dùng toán tử ! để khẳng định giá trị không null. Học viên chú ý trường hợp gọi với null sẽ ném exception.",
+      "code": "String getUpperCase(String? text) {\n  if (text == null) {\n    throw Exception('Text cannot be null');\n  }\n  return text!.toUpperCase();\n}\n\nvoid main() {\n  print('In hoa hello: ${getUpperCase('hello')}');\n  print('In hoa dart: ${getUpperCase('dart')}');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "functions-null-001",

@@ -8,6 +8,60 @@
     "Tạo và sử dụng các Widget cơ bản"
   ],
   "prerequisites": ["basics"],
+  "theory": [
+    {
+      "title": "Widget là gì?",
+      "content": [
+        "Trong Flutter, MỌI thứ trên màn hình đều là một Widget: chữ là Text, nút bấm là ElevatedButton, khoảng trắng là SizedBox, cả màn hình là Scaffold. Flutter dùng cách 'mọi thứ đều là widget' để xây dựng giao diện nhất quán và dễ tái sử dụng.",
+        "Widget là một mô tả bất biến (immutable) về giao diện. Khi cấu hình của widget thay đổi, Flutter không sửa widget cũ mà tạo ra widget mới và so sánh (diff) với widget cũ để cập nhật phần cần thiết lên màn hình.",
+        "DartPad chỉ chạy được Dart thuần, không có thư viện Flutter. Vì vậy trong bài học này chúng ta sẽ mô phỏng widget bằng các class Dart đơn giản: mỗi class có thuộc tính (như tên, dữ liệu) và một method build() trả về chuỗi mô tả, giống như cách build() trong Flutter trả về widget thật."
+      ]
+    },
+    {
+      "title": "StatelessWidget và method build()",
+      "content": [
+        "StatelessWidget là widget KHÔNG có trạng thái thay đổi theo thời gian. Dữ liệu của nó được khai báo một lần (final) và giữ nguyên trong suốt vòng đời. Ví dụ một widget hiển thị tên người dùng sẽ không bao giờ đổi tên.",
+        "Method build() là 'xưởng sản xuất' của widget: Flutter gọi build() để lấy mô tả giao diện mỗi khi cần render. Với StatelessWidget, build() chỉ đọc dữ liệu đầu vào và trả về cấu trúc widget tương ứng, không làm gì khác.",
+        "Trong mô phỏng Dart, chúng ta tạo class có các property final (giống StatelessWidget immutable) và một method build() trả về chuỗi mô tả giao diện. Đây chính là nền tảng cho bài tập GreetingWidget: property name được truyền vào constructor và build() nhúng nó vào chuỗi bằng string interpolation."
+      ]
+    },
+    {
+      "title": "Cây Widget (Widget Tree)",
+      "content": [
+        "Giao diện Flutter thực chất là một CÂY: một widget gốc (như Scaffold) chứa các widget con (như Column), mỗi widget con lại chứa các widget con khác (như Text, Button). Cấu trúc phân cấp này được gọi là Widget Tree.",
+        "Khi bạn viết UI bằng code, bạn đang xây dựng cây này từ trong ra ngoài hoặc từ trên xuống. Flutter duyệt cây để tính toán vị trí, kích thước và vẽ từng widget. Việc hiểu cây giúp bạn biết widget nào nằm trong widget nào và data chảy theo hướng nào.",
+        "Để luyện tập với Dart thuần, chúng ta mô phỏng bằng class WidgetNode có thuộc tính type (tên widget) và children (danh sách widget con). Method describe() trả về chuỗi mô tả cây, và find() đệ quy tìm widget theo tên — giống như cách Flutter tìm kiếm trong cây widget."
+      ]
+    },
+    {
+      "title": "Chạy ứng dụng: runApp() và main()",
+      "content": [
+        "Mọi chương trình Dart đều bắt đầu từ hàm main(). Trong Flutter, main() gọi runApp(Widget) để đưa widget gốc lên màn hình. Ví dụ: void main() => runApp(const MyApp()); — MyApp là widget gốc chứa toàn bộ ứng dụng.",
+        "Khác với StatelessWidget, StatefulWidget có trạng thái thay đổi được (như bộ đếm tăng dần). Nó tách thành hai phần: Widget (bất biến) và State (thay đổi được, chứa dữ liệu + logic). Khi state thay đổi, Flutter gọi setState() để build lại UI.",
+        "Trong các ví dụ và bài tập Dart thuần, bạn sẽ thấy main() in kết quả ra màn hình console thay vì render giao diện. Class mô phỏng stateful (như Counter) giữ state riêng (thường là private với dấu _) và expose các method để đọc/ghi state — đúng tinh thần encapsulation của StatefulWidget."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-basics-ex1",
+      "title": "GreetingWidget cơ bản",
+      "description": "Mô phỏng một StatelessWidget với property final và method build() trả về chuỗi mô tả. Hãy chú ý cách string interpolation $name nhúng dữ liệu vào kết quả.",
+      "code": "class GreetingWidget {\n  final String name;\n\n  const GreetingWidget(this.name);\n\n  String build() {\n    return 'Widget: GreetingWidget, Name: $name';\n  }\n}\n\nvoid main() {\n  final alice = GreetingWidget('Alice');\n  final binh = GreetingWidget('Bình');\n\n  print(alice.build());\n  print(binh.build());\n}"
+    },
+    {
+      "id": "flutter-basics-ex2",
+      "title": "Xây dựng cây widget đơn giản",
+      "description": "Mô phỏng Widget Tree bằng class WidgetNode có children. Quan sát cách describe() đếm số lượng widget con trực tiếp để hiểu cấu trúc phân cấp.",
+      "code": "class WidgetNode {\n  final String type;\n  final List<WidgetNode> children;\n\n  WidgetNode(this.type, {List<WidgetNode>? children})\n      : children = children ?? [];\n\n  void addChild(WidgetNode child) {\n    children.add(child);\n  }\n\n  String describe() {\n    return '$type(${children.length})';\n  }\n}\n\nvoid main() {\n  final root = WidgetNode('Scaffold');\n  final column = WidgetNode('Column');\n\n  column.addChild(WidgetNode('Text'));\n  column.addChild(WidgetNode('Button'));\n  root.addChild(column);\n  root.addChild(WidgetNode('AppBar'));\n\n  print('Root: ${root.describe()}');\n  print('Column: ${column.describe()}');\n  print('Column con trực tiếp: ${column.children.length}');\n}"
+    },
+    {
+      "id": "flutter-basics-ex3",
+      "title": "Counter mô phỏng StatefulWidget",
+      "description": "Mô phỏng StatefulWidget bằng class có state private. Chú ý: state (biến _count) bị che giấu và chỉ được thay đổi qua method increment(), đúng encapsulation pattern của Flutter.",
+      "code": "class Counter {\n  int _count = 0;\n\n  void increment() {\n    _count++;\n  }\n\n  int getCount() {\n    return _count;\n  }\n\n  String build() {\n    return 'Count: $_count';\n  }\n}\n\nvoid main() {\n  final counter = Counter();\n  print('Ban đầu: ${counter.build()}');\n\n  counter.increment();\n  counter.increment();\n  counter.increment();\n\n  print('Sau 3 lần increment: ${counter.build()}');\n  print('getCount() = ${counter.getCount()}');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-basics-001",

@@ -37,7 +37,21 @@ export interface Lesson {
   description: string;
   objectives: string[];
   prerequisites: string[];
+  theory: TheorySection[];
+  examples: Example[];
   exercises: Exercise[];
+}
+
+export interface TheorySection {
+  title: string;
+  content: string[];
+}
+
+export interface Example {
+  id: string;
+  title: string;
+  description: string;
+  code: string;
 }
 
 export interface LessonProgress {

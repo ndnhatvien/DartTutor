@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 interface DartPadEmbedProps {
   initialCode: string;
   testCode?: string;
+  externalCode?: string;
   onReady?: () => void;
   onTestsRun?: () => void;
   onConsoleOutput?: (output: string) => void;
@@ -200,6 +201,7 @@ function transformTestCode(raw: string): { code: string; needsAsync: boolean } {
 export default function DartPadEmbed({
   initialCode,
   testCode,
+  externalCode,
   onReady,
   onTestsRun,
   onConsoleOutput,
@@ -250,6 +252,12 @@ export default function DartPadEmbed({
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, [onReady, onConsoleOutput, onCompilationError, sendCodeToDartPad, initialCode]);
+
+  useEffect(() => {
+    if (externalCode && isReady) {
+      sendCodeToDartPad(externalCode);
+    }
+  }, [externalCode, isReady, sendCodeToDartPad]);
 
   const runTests = () => {
     if (!testCode) return;

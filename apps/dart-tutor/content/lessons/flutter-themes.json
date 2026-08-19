@@ -8,6 +8,60 @@
     "Triển khai dark/light mode switching"
   ],
   "prerequisites": ["flutter-basics"],
+  "theory": [
+    {
+      "title": "ThemeData và ColorScheme trong Flutter",
+      "content": [
+        "Flutter cho phép định nghĩa giao diện tập trung qua `ThemeData`, truyền vào `MaterialApp(theme: ...)`. Từ đó các widget như `AppBar`, `Button`, `Text` tự lấy màu sắc và kiểu chữ, giúp toàn app nhất quán chỉ với một thay đổi.",
+        "Flutter Material 3 giới thiệu `ColorScheme` — một bộ token màu (primary, secondary, surface, background...) được dùng thống nhất khắp app. Bạn có thể tạo `ColorScheme.fromSeed(seedColor: ...)` để Flutter tự sinh cả bảng màu hài hòa từ một màu gốc.",
+        "Vì DartPad không hiển thị widget, các bài tập mô phỏng bằng class `ColorPalette`, `ThemeSwitcher`, `ThemeTokens` thuần Dart: chúng thao tác cùng loại dữ liệu (chuỗi hex, map màu, token) mà bạn sẽ dùng khi tùy biến theme thật."
+      ]
+    },
+    {
+      "title": "Màu sắc: mã hex RGB và thao tác palette",
+      "content": [
+        "Trong Flutter, màu được biểu diễn bằng class `Color`, thường khởi tạo từ mã hex như `Color(0xFFFF5722)`. Mã hex có dạng RRGGBB: hai ký tự đầu là Red, tiếp theo là Green, cuối cùng là Blue.",
+        "Để parse một chuỗi hex kiểu '#FF5722' sang số nguyên, bạn bỏ dấu `#` rồi gọi `int.parse(str, radix: 16)`. Sau đó dùng bit shift để tách từng kênh: R = (value >> 16) & 0xFF, G = (value >> 8) & 0xFF, B = value & 0xFF.",
+        "Khi làm sáng/tối màu, ta cộng/trừ `amount * 255` cho từng kênh rồi clamp về [0, 255] để không vượt khỏi phạm vi màu hợp lệ. Kết quả đóng gói lại thành hex bằng `toRadixString(16)` kèm `padLeft(2, '0')`."
+      ]
+    },
+    {
+      "title": "Dark mode và chuyển đổi theme",
+      "content": [
+        "Hầu hết app hiện nay cần dark mode. Trong Flutter, bạn khai báo cả `theme` (sáng) và `darkTheme` cho `MaterialApp`, rồi dùng `ThemeMode.light`, `ThemeMode.dark` hoặc `ThemeMode.system` để quyết định áp dụng cái nào.",
+        "Khi chuyển theme, toàn bộ màu trong app thay đổi theo `ColorScheme`. Điều quan trọng là không hard-code màu trong từng widget mà nên lấy từ theme qua `Theme.of(context)`, để việc chuyển đổi chỉ cần thay đổi một chỗ.",
+        "Bài tập mô phỏng bằng class `ThemeSwitcher` lưu mode hiện tại ('light'/'dark'), trả về bộ màu tương ứng qua `getColors()` và đóng gói vào `ThemeConfig` — giống cách một app thật duy trì trạng thái theme."
+      ]
+    },
+    {
+      "title": "Design tokens và typography",
+      "content": [
+        "Design tokens là các giá trị được đặt tên và dùng lặp lại: spacing (4, 8, 16...), border radius (4, 8, 16, full), font size. Tập trung chúng vào một nơi giúp thiết kế nhất quán và dễ dàng điều chỉnh theo từng preset.",
+        "Typography trong Flutter được quản lý qua `TextTheme` với các role như `headlineLarge` (H1), `bodyMedium`, `caption`. Một hệ thống typography tốt dùng một `baseSize` và nhân với các hệ số để tạo thành thang đo rõ ràng.",
+        "Các bài tập dùng `ThemeTokens` (spacing/borderRadius/fontSize/elevation theo preset) và `TypographyScale` (h1, h2, body, caption được tính từ baseSize × scale) để bạn làm quen với cách tổ chức token trước khi áp dụng lên `ThemeData` thật."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-themes-ex1",
+      "title": "Thao tác màu hex: làm sáng và làm tối",
+      "description": "Parse mã màu hex, tách từng kênh R/G/B bằng bit shift rồi cộng/trừ để làm sáng hoặc tối. Hãy chú ý cách clamp giữ mỗi kênh trong khoảng 0-255 và đóng gói lại thành hex.",
+      "code": "class ColorPalette {\n  String lighten(String hex, double amount) {\n    final value = _parseHex(hex);\n    int r = (value >> 16) & 0xFF;\n    int g = (value >> 8) & 0xFF;\n    int b = value & 0xFF;\n\n    r = (r + (amount * 255).round()).clamp(0, 255).toInt();\n    g = (g + (amount * 255).round()).clamp(0, 255).toInt();\n    b = (b + (amount * 255).round()).clamp(0, 255).toInt();\n\n    return _toHex(r, g, b);\n  }\n\n  String darken(String hex, double amount) {\n    final value = _parseHex(hex);\n    int r = (value >> 16) & 0xFF;\n    int g = (value >> 8) & 0xFF;\n    int b = value & 0xFF;\n\n    r = (r - (amount * 255).round()).clamp(0, 255).toInt();\n    g = (g - (amount * 255).round()).clamp(0, 255).toInt();\n    b = (b - (amount * 255).round()).clamp(0, 255).toInt();\n\n    return _toHex(r, g, b);\n  }\n\n  int _parseHex(String hex) {\n    return int.parse(hex.replaceFirst('#', ''), radix: 16);\n  }\n\n  String _toHex(int r, int g, int b) {\n    final rr = r.toRadixString(16).padLeft(2, '0').toUpperCase();\n    final gg = g.toRadixString(16).padLeft(2, '0').toUpperCase();\n    final bb = b.toRadixString(16).padLeft(2, '0').toUpperCase();\n    return '#$rr$gg$bb';\n  }\n}\n\nvoid main() {\n  final palette = ColorPalette();\n  final primary = '#FF5722';\n\n  print('Màu gốc: $primary');\n  print('Sáng lên 20%: ${palette.lighten(primary, 0.2)}');\n  print('Sáng lên 50%: ${palette.lighten(primary, 0.5)}');\n  print('Tối đi 20%: ${palette.darken(primary, 0.2)}');\n  print('Tối đi 50%: ${palette.darken(primary, 0.5)}');\n  print('Clamp khi sáng quá: ${palette.lighten('#FFFFFF', 0.5)}');\n}"
+    },
+    {
+      "id": "flutter-themes-ex2",
+      "title": "Chuyển đổi giữa theme sáng và tối",
+      "description": "Dùng ThemeSwitcher để lưu mode hiện tại và trả về bộ màu tương ứng. Chú ý cách toggle() đảo light ↔ dark và cách setMode throw ArgumentError khi nhận mode không hợp lệ.",
+      "code": "class ThemeConfig {\n  final String mode;\n  final Map<String, String> colors;\n  ThemeConfig({required this.mode, required this.colors});\n\n  String get backgroundColor => colors['background'] ?? '#FFFFFF';\n  String get textColor => colors['text'] ?? '#000000';\n}\n\nclass ThemeSwitcher {\n  String _mode;\n\n  static const _lightColors = {\n    'background': '#FFFFFF',\n    'surface': '#F5F5F5',\n    'text': '#1E293B',\n    'textSecondary': '#64748B',\n    'primary': '#3B82F6',\n    'border': '#E2E8F0',\n  };\n\n  static const _darkColors = {\n    'background': '#0F172A',\n    'surface': '#1E293B',\n    'text': '#F1F5F9',\n    'textSecondary': '#94A3B8',\n    'primary': '#60A5FA',\n    'border': '#334155',\n  };\n\n  ThemeSwitcher({String initialMode = 'light'}) : _mode = initialMode {\n    if (initialMode != 'light' && initialMode != 'dark') {\n      throw ArgumentError('Chế độ không hợp lệ: $initialMode');\n    }\n  }\n\n  String get mode => _mode;\n  bool get isDark => _mode == 'dark';\n\n  void toggle() => _mode = _mode == 'light' ? 'dark' : 'light';\n\n  void setMode(String mode) {\n    if (mode != 'light' && mode != 'dark') {\n      throw ArgumentError('Chế độ không hợp lệ: $mode');\n    }\n    _mode = mode;\n  }\n\n  Map<String, String> getColors() {\n    return _mode == 'dark' ? Map.from(_darkColors) : Map.from(_lightColors);\n  }\n\n  ThemeConfig getConfig() => ThemeConfig(mode: _mode, colors: getColors());\n}\n\nvoid main() {\n  final switcher = ThemeSwitcher();\n  print('Mode ban đầu: ${switcher.mode}');\n\n  final light = switcher.getConfig();\n  print('Nền sáng: ${light.backgroundColor}');\n  print('Chữ sáng: ${light.textColor}');\n\n  switcher.toggle();\n  final dark = switcher.getConfig();\n  print('Mode sau toggle: ${switcher.mode}');\n  print('Nền tối: ${dark.backgroundColor}');\n  print('Chữ tối: ${dark.textColor}');\n\n  try {\n    switcher.setMode('blue');\n  } catch (e) {\n    print('setMode blue: lỗi ($e)');\n  }\n}"
+    },
+    {
+      "id": "flutter-themes-ex3",
+      "title": "Design tokens cho spacing và typography",
+      "description": "Tập trung các giá trị thiết kế vào ThemeTokens (theo preset) và TypographyScale (từ baseSize × hệ số). Hãy để ý cách preset compact thay đổi toàn bộ token cùng lúc.",
+      "code": "class ThemeTokens {\n  final String preset;\n  ThemeTokens({this.preset = 'default'});\n\n  Map<String, double> get spacing {\n    if (preset == 'compact') {\n      return {'xs': 2, 'sm': 4, 'md': 8, 'lg': 12, 'xl': 16};\n    }\n    return {'xs': 4, 'sm': 8, 'md': 16, 'lg': 24, 'xl': 32};\n  }\n\n  double get elevation => preset == 'compact' ? 2.0 : 4.0;\n}\n\nclass TypographyScale {\n  final double baseSize;\n  final double scale;\n  TypographyScale({this.baseSize = 14.0, this.scale = 1.0});\n\n  double h1() => baseSize * 2.0 * scale;\n  double body() => baseSize * scale;\n  double caption() => baseSize * 0.85 * scale;\n}\n\nvoid main() {\n  final tokens = ThemeTokens();\n  print('Spacing md (default): ${tokens.spacing['md']}');\n  print('Elevation (default): ${tokens.elevation}');\n\n  final compact = ThemeTokens(preset: 'compact');\n  print('Spacing md (compact): ${compact.spacing['md']}');\n  print('Elevation (compact): ${compact.elevation}');\n\n  final typo = TypographyScale(baseSize: 16.0);\n  print('H1: ${typo.h1()}');\n  print('Body: ${typo.body()}');\n  print('Caption: ${typo.caption()}');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-theme-001",

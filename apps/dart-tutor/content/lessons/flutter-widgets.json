@@ -8,6 +8,60 @@
     "Tùy chỉnh giao diện widget bằng styling"
   ],
   "prerequisites": ["flutter-basics"],
+  "theory": [
+    {
+      "title": "Các widget hiển thị cơ bản: Text, Icon, Container",
+      "content": [
+        "Text hiển thị văn bản với style (cỡ chữ, màu, in đậm...): Text('Xin chào', style: TextStyle(fontSize: 20)). Icon hiển thị biểu tượng: Icon(Icons.star, color: Colors.amber). Cả hai đều là widget 'lá' — không chứa widget con.",
+        "Container là widget vạn năng: có thể thêm padding, margin, màu nền, viền, bo góc và kích thước. Nó thường được dùng để bao bọc và trang trí các widget khác: Container(padding: EdgeInsets.all(16), color: Colors.blue, child: Text('OK')).",
+        "Để luyện tập bằng Dart thuần, chúng ta mô phỏng các widget này bằng class đơn giản lưu dữ liệu hiển thị (như title, subtitle, emoji) và method mô tả định dạng output — giống cách Text/Container nhận dữ liệu rồi render ra giao diện."
+      ]
+    },
+    {
+      "title": "Card và styling: border, shadow, shape",
+      "content": [
+        "Card là một tấm vật liệu (material) dùng để nhóm nội dung liên quan. Flutter cung cấp Card với thuộc tính: elevation (độ cao tạo shadow đổ bóng), shape (hình dạng viền, bo góc), color (màu nền) và margin (khoảng cách bên ngoài).",
+        "Một Card đẹp thường kết hợp nhiều lớp styling: elevation tạo cảm giác nổi khỏi nền, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)) làm bo góc, và có thể thêm border riêng: side: BorderSide(color: Colors.grey, width: 1).",
+        "Trong mô phỏng Dart thuần, class CardBuilder lưu title, subtitle, emoji và mô tả cách 'render' một card ra chuỗi. Các method như describe(), toMap(), isLongTitle() giúp bạn nắm cách dữ liệu được định dạng và kiểm tra — tương tự cách Flutter quyết định hiển thị nội dung trong Card."
+      ]
+    },
+    {
+      "title": "ListView và GridView: hiển thị danh sách",
+      "content": [
+        "ListView hiển thị danh sách cuộn dọc, mỗi phần tử là một ListTile hoặc widget bất kỳ: ListView(children: [ListTile(title: Text('A')), ListTile(title: Text('B'))]). Khi danh sách dài, ta dùng ListView.builder để chỉ build phần tử đang nhìn thấy — rất tiết kiệm bộ nhớ.",
+        "GridView hiển thị dữ liệu theo lưới nhiều cột: GridView.count(crossAxisCount: 2, children: [...]). Số cột có thể cố định (count) hoặc tính theo bề rộng màn hình (maxCrossAxisExtent). GridView rất hợp hiển thị ảnh, biểu tượng, danh mục sản phẩm.",
+        "Trước khi render, dữ liệu thường cần được xử lý: lọc, sắp xếp, định dạng chuỗi. Class ListFormatter trong bài tập mô phỏng chính bước này bằng Dart thuần: filterByCategory lọc theo danh mục (như GridView chia nhóm), sortByField sắp xếp, toDisplayList định dạng từng dòng giống cách ListView render từng ListTile."
+      ]
+    },
+    {
+      "title": "Hiển thị dữ liệu dạng bảng và badge",
+      "content": [
+        "DataTable trong Flutter hiển thị dữ liệu dạng bảng với cột, hàng, tiêu đề và sắp xếp theo cột. Với lượng dữ liệu nhỏ bạn dùng DataTable trực tiếp, còn với dữ liệu lớn thường kết hợp PaginatedDataTable. Dữ liệu thô thường là List<Map> hoặc List<List> được map thành bảng.",
+        "Badge là widget hiển thị số đếm nhỏ (ví dụ số thông báo chưa đọc). Khi hiển thị, cần xử lý các trường hợp biên: count = 0 (ẩn hoặc hiện số 0), count lớn (hiện '99+'), và đổi màu theo mức độ nghiêm trọng.",
+        "Trong mô phỏng Dart thuần, class DataTable thực hiện đúng các thao tác trên danh sách 2 chiều: getColumn lấy cột, sortByColumn sắp xếp, filter tìm kiếm, toFormatted vẽ bảng dạng text. Class Badge xử lý logic hiển thị số đếm và màu sắc. Cả hai giúp bạn hiểu phần 'logic dữ liệu' đằng sau widget hiển thị."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-widgets-ex1",
+      "title": "CardBuilder mô phỏng Card",
+      "description": "Mô phỏng cách một Card hiển thị nội dung: dữ liệu được định dạng thành chuỗi (describe), map (toMap) và kiểm tra độ dài (isLongTitle) — giống Flutter render nội dung trong Card.",
+      "code": "class CardBuilder {\n  final String title;\n  final String subtitle;\n  final String emoji;\n\n  CardBuilder(this.title, this.subtitle, {String? emoji})\n      : emoji = emoji ?? '📄';\n\n  String describe() {\n    return '[$emoji] $title - $subtitle';\n  }\n\n  Map<String, dynamic> toMap() {\n    return {'title': title, 'subtitle': subtitle, 'emoji': emoji};\n  }\n\n  bool isLongTitle() {\n    return title.length > 20;\n  }\n}\n\nvoid main() {\n  final card = CardBuilder('Hello World', 'A greeting card');\n  print(card.describe());\n  print(card.toMap());\n  print('Long title: ${card.isLongTitle()}');\n\n  final long = CardBuilder(\n      'Một tiêu đề rất dài vượt quá hai mươi ký tự', 'Long', emoji: '🎯');\n  print(long.describe());\n  print('Long title: ${long.isLongTitle()}');\n}"
+    },
+    {
+      "id": "flutter-widgets-ex2",
+      "title": "ListFormatter chuẩn bị dữ liệu cho ListView",
+      "description": "Trước khi ListView/GridView render, dữ liệu cần được lọc và định dạng. Ví dụ này mô phỏng lọc theo danh mục, sắp xếp và tạo chuỗi hiển thị cho từng dòng.",
+      "code": "class ListFormatter {\n  final List<Map<String, dynamic>> items;\n\n  ListFormatter(this.items);\n\n  List<Map<String, dynamic>> filterByCategory(String category) {\n    return items.where((item) => item['category'] == category).toList();\n  }\n\n  List<String> toDisplayList() {\n    return items.asMap().entries.map((entry) {\n      return '[${entry.key}] ${entry.value['name']}: '\n          '${entry.value['description']}';\n    }).toList();\n  }\n\n  String summary() {\n    final categories = items\n        .map((item) => item['category'].toString())\n        .toSet()\n        .toList()\n      ..sort();\n    return 'Items: ${items.length}, Categories: [${categories.join(', ')}]';\n  }\n}\n\nvoid main() {\n  final items = [\n    {'name': 'Apple', 'description': 'Red fruit', 'category': 'fruit'},\n    {'name': 'Carrot', 'description': 'Orange veggie', 'category': 'vegetable'},\n    {'name': 'Banana', 'description': 'Yellow fruit', 'category': 'fruit'},\n  ];\n\n  final formatter = ListFormatter(items);\n  print('Fruit count: ${formatter.filterByCategory(\"fruit\").length}');\n  print(formatter.toDisplayList());\n  print(formatter.summary());\n}"
+    },
+    {
+      "id": "flutter-widgets-ex3",
+      "title": "Badge xử lý hiển thị số đếm",
+      "description": "Mô phỏng badge widget hiển thị số thông báo: xử lý trường hợp 0, cắt giá trị lớn thành '99+' và đổi màu theo mức độ. Đây là logic cần có trước khi render badge thật.",
+      "code": "class Badge {\n  final int count;\n  final String label;\n\n  Badge(this.count, {this.label = ''});\n\n  String get display {\n    if (count >= 100) return '99+';\n    return count.toString();\n  }\n\n  bool get isVisible => count > 0;\n\n  String get color {\n    if (count == 0) return '#9CA3AF';\n    if (count <= 10) return '#EF4444';\n    if (count <= 50) return '#F59E0B';\n    return '#10B981';\n  }\n\n  String describe() => 'Badge($display, $label, $color)';\n}\n\nvoid main() {\n  final msgs = Badge(5, label: 'msgs');\n  final tasks = Badge(150, label: 'tasks');\n  final empty = Badge(0);\n\n  print(msgs.describe());\n  print('Visible: ${msgs.isVisible}');\n  print('Big badge: ${tasks.display}');\n  print('Empty: ${empty.describe()}');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-widgets-001",
@@ -79,7 +133,7 @@
         {
           "id": "wrong_order",
           "pattern": "if (width >= tabletBreakpoint) return 'desktop';\nif (width >= mobileBreakpoint) return 'tablet';",
-          "explanation": "Sai thứ tự kiểm tra, desktop check trước sẽ đúng nhưng method order مهم",
+          "explanation": "Sai thứ tự kiểm tra, desktop check trước sẽ đúng nhưng method order quan trọng",
           "hint": "Kiểm tra从小到大: mobile trước, rồi tablet, cuối desktop"
         }
       ]

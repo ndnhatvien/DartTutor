@@ -5,9 +5,10 @@ import { learnerStateManager } from '../learner/singleton';
 import ExerciseView from './ExerciseView';
 import Layout from './Layout';
 import LessonList from './LessonList';
+import LessonView from './LessonView';
 import ProgressPanel from './ProgressPanel';
 
-type View = 'lesson-list' | 'exercise';
+type View = 'lesson-list' | 'lesson' | 'exercise';
 
 function buildProgressMap(lessons: ReturnType<typeof getAllLessons>) {
   const map = new Map<string, LessonProgress>();
@@ -40,8 +41,15 @@ export default function App() {
 
   const handleSelectLesson = (lessonId: string) => {
     const lesson = lessons.find((l) => l.id === lessonId);
-    if (lesson?.exercises && lesson.exercises.length > 0) {
+    if (lesson) {
       setSelectedLessonId(lessonId);
+      setView('lesson');
+    }
+  };
+
+  const handleStartExercises = () => {
+    const lesson = lessons.find((l) => l.id === selectedLessonId);
+    if (lesson?.exercises && lesson.exercises.length > 0) {
       setSelectedExerciseId(lesson.exercises[0]?.id ?? null);
       setView('exercise');
     }
@@ -90,6 +98,14 @@ export default function App() {
             totalExercises={totalExercises}
           />
         </div>
+      )}
+
+      {view === 'lesson' && currentLesson && (
+        <LessonView
+          lesson={currentLesson}
+          onBack={handleBack}
+          onStartExercises={handleStartExercises}
+        />
       )}
 
       {view === 'exercise' && currentExercise && (

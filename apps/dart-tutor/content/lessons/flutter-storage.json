@@ -8,6 +8,60 @@
     "Quản lý file I/O đơn giản"
   ],
   "prerequisites": ["flutter-basics"],
+  "theory": [
+    {
+      "title": "SharedPreferences và lưu trữ key-value",
+      "content": [
+        "`SharedPreferences` là API phổ biến nhất để lưu dữ liệu nhỏ dạng key-value trong Flutter: cài đặt, token, cờ trạng thái. Nó cung cấp các phương thức `getString`, `setString`, `getInt`, `setBool`, `getDouble`, `remove`, `clear` và hoạt động bất đồng bộ (trả về `Future`).",
+        "Dữ liệu được lưu trên thiết bị dưới dạng file cấu hình, không phải database. Vì vậy chỉ nên lưu dữ liệu nhỏ và phẳng (không lồng nhau). Khi cần cấu trúc phức tạp hơn, hãy serialize sang JSON rồi lưu thành một chuỗi.",
+        "Bài tập mô phỏng bằng class `KeyValueStore` thuần Dart: dùng `Map<String, dynamic>` nội bộ với các phương thức `setString`/`getString`/`getInt`/`setBool`/`remove`/`clear` — giống hệt API của SharedPreferences nhưng đồng bộ."
+      ]
+    },
+    {
+      "title": "Cache và TTL (time-to-live)",
+      "content": [
+        "Cache giúp tránh gọi lại API hoặc tính toán lại những thao tác tốn kém. Mỗi entry cache nên có thời gian sống (TTL): sau TTL mili giây, entry bị coi là hết hạn và phải nạp lại dữ liệu mới.",
+        "Hai thời điểm cần kiểm tra hết hạn: lúc đọc (nếu hết hạn thì trả về null) và lúc dọn dẹp (`cleanup`) — xóa toàn bộ entry cũ khỏi bộ nhớ để tránh rò rỉ bộ nhớ theo thời gian.",
+        "Trong Dart thuần, ta lưu entry kèm `expiresAt = now + ttlMs` và so sánh với `DateTime.now().millisecondsSinceEpoch`. Class `Cache<T>` trong bài tập minh họa đúng pattern này, kèm giới hạn `maxSize` để cache không phình to vô hạn."
+      ]
+    },
+    {
+      "title": "Migration dữ liệu theo phiên bản",
+      "content": [
+        "Khi app nâng cấp, dữ liệu lưu trên thiết bị của người dùng có thể đang ở phiên bản cũ. Thay vì xóa toàn bộ, ta viết các migration: mỗi migration nâng dữ liệu từ phiên bản v lên v+1, và chạy tuần tự theo thứ tự tăng dần.",
+        "Migration giúp dữ liệu luôn tương thích với phiên bản code hiện tại: ví dụ thêm field mới với giá trị mặc định, đổi tên field, hoặc chuyển đổi kiểu dữ liệu cũ sang kiểu mới.",
+        "Class `MigrationRunner` trong bài tập quản lý map `version → hàm up(data)`, chỉ chạy các migration có `version > currentVersion && version <= targetVersion` theo thứ tự tăng dần — mô phỏng đúng cách các ORM như sqflite hay drift thực hiện schema migration."
+      ]
+    },
+    {
+      "title": "Quản lý settings với default và override",
+      "content": [
+        "Các tùy chọn cài đặt của app thường có giá trị mặc định và cho phép người dùng ghi đè. Pattern phổ biến là tách hai lớp: `defaults` (giá trị gốc) và `overrides` (giá trị người dùng thay đổi).",
+        "Khi đọc một key, ưu tiên override nếu tồn tại, nếu không trả về default. Khi reset, chỉ xóa overrides, còn defaults vẫn giữ nguyên. Việc merge `{...defaults, ...overrides}` cho phép lấy nhanh toàn bộ cấu hình cuối cùng.",
+        "Class `SettingsManager` trong bài tập thể hiện chính xác pattern này bằng Dart thuần — áp dụng được cho mọi loại cấu hình từ theme, ngôn ngữ cho đến tùy chọn thông báo."
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "id": "flutter-storage-ex1",
+      "title": "KeyValueStore mô phỏng SharedPreferences",
+      "description": "Tái hiện API SharedPreferences bằng class KeyValueStore thuần Dart. Chú ý cách cast kiểu khi đọc (as String?, as int?) để lấy đúng loại dữ liệu đã lưu.",
+      "code": "class KeyValueStore {\n  final Map<String, dynamic> _data = {};\n\n  void setString(String key, String value) => _data[key] = value;\n  void setInt(String key, int value) => _data[key] = value;\n  void setBool(String key, bool value) => _data[key] = value;\n\n  String? getString(String key) => _data[key] as String?;\n  int? getInt(String key) => _data[key] as int?;\n  bool? getBool(String key) => _data[key] as bool?;\n\n  bool containsKey(String key) => _data.containsKey(key);\n  void remove(String key) => _data.remove(key);\n  void clear() => _data.clear();\n  int get length => _data.length;\n  Set<String> get keys => _data.keys.toSet();\n}\n\nvoid main() {\n  final store = KeyValueStore();\n  store.setString('name', 'Nguyễn Văn A');\n  store.setInt('age', 25);\n  store.setBool('isLoggedIn', true);\n\n  print('Name: ${store.getString('name')}');\n  print('Age: ${store.getInt('age')}');\n  print('Logged in: ${store.getBool('isLoggedIn')}');\n  print('Keys: ${store.keys}');\n  print('Có key age không: ${store.containsKey('age')}');\n\n  store.remove('age');\n  print('Sau khi xóa age: ${store.getInt('age')}');\n  print('Số key còn lại: ${store.length}');\n}"
+    },
+    {
+      "id": "flutter-storage-ex2",
+      "title": "Cache có thời hạn (TTL)",
+      "description": "Minh họa cache với thời gian sống: entry được đánh dấu hết hạn sau TTL và bị bỏ qua khi đọc. Ví dụ dùng đồng hồ giả lập advanceClock để dễ kiểm tra mà không cần chờ thời gian thực.",
+      "code": "class _CacheEntry<T> {\n  final T value;\n  final int expiresAt;\n  _CacheEntry(this.value, this.expiresAt);\n}\n\nclass Cache<T> {\n  final int ttlMs;\n  final Map<String, _CacheEntry<T>> _data = {};\n  int _clock = 0;\n\n  Cache({required this.ttlMs});\n\n  void advanceClock(int ms) => _clock += ms;\n\n  void put(String key, T value) {\n    _data[key] = _CacheEntry(value, _clock + ttlMs);\n  }\n\n  T? get(String key) {\n    final entry = _data[key];\n    if (entry == null) return null;\n    if (_clock > entry.expiresAt) {\n      _data.remove(key);\n      return null;\n    }\n    return entry.value;\n  }\n\n  int get length => _data.length;\n}\n\nvoid main() {\n  final cache = Cache<String>(ttlMs: 1000);\n  cache.put('token', 'abc123');\n  print('Lúc 0ms: ${cache.get('token')}');\n\n  cache.advanceClock(500);\n  print('Lúc 500ms: ${cache.get('token')}');\n\n  cache.advanceClock(600);\n  print('Lúc 1100ms: ${cache.get('token')}');\n  print('Số entry còn lại: ${cache.length}');\n}"
+    },
+    {
+      "id": "flutter-storage-ex3",
+      "title": "Settings với default và override",
+      "description": "Quản lý cấu hình với hai lớp defaults và overrides: đọc ưu tiên override, removeOverride quay lại giá trị gốc, còn reset xóa toàn bộ thay đổi của người dùng.",
+      "code": "class SettingsManager {\n  final Map<String, dynamic> _defaults;\n  final Map<String, dynamic> _overrides = {};\n\n  SettingsManager(Map<String, dynamic> defaults) : _defaults = Map.from(defaults);\n\n  void set(String key, dynamic value) => _overrides[key] = value;\n\n  dynamic get(String key) {\n    if (_overrides.containsKey(key)) return _overrides[key];\n    return _defaults[key];\n  }\n\n  bool hasOverride(String key) => _overrides.containsKey(key);\n\n  void removeOverride(String key) => _overrides.remove(key);\n\n  Map<String, dynamic> getAll() => {..._defaults, ..._overrides};\n\n  void reset() => _overrides.clear();\n\n  int get overrideCount => _overrides.length;\n}\n\nvoid main() {\n  final settings = SettingsManager({\n    'theme': 'light',\n    'fontSize': 14,\n    'language': 'vi',\n  });\n\n  print('Theme mặc định: ${settings.get('theme')}');\n  settings.set('theme', 'dark');\n  settings.set('fontSize', 18);\n  print('Theme sau override: ${settings.get('theme')}');\n  print('Có override theme: ${settings.hasOverride('theme')}');\n  print('Toàn bộ cấu hình: ${settings.getAll()}');\n\n  settings.removeOverride('theme');\n  print('Sau khi xóa override theme: ${settings.get('theme')}');\n  settings.reset();\n  print('Sau reset, fontSize: ${settings.get('fontSize')}');\n}"
+    }
+  ],
   "exercises": [
     {
       "id": "flutter-storage-001",
